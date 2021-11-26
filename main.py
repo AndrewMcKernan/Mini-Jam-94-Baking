@@ -54,6 +54,9 @@ def draw_cursor(x, y):
 def coordinates_to_xy(coordinates):
     return coordinates[0] * TILE_WIDTH, coordinates[1] * TILE_HEIGHT
 
+def mouse_pos_to_grid_coords(mouse_pos):
+    return mouse_pos[0] // TILE_WIDTH, mouse_pos[1] // TILE_HEIGHT
+
 
 def draw_window(cursor_xy, fps):
     pygame.draw.rect(WIN, BLACK, pygame.Rect(0, 0, WIDTH, HEIGHT))
@@ -86,7 +89,10 @@ def game():
     game_begin_time = pygame.time.get_ticks()  # the time that the game actually began
     start_time = pygame.time.get_ticks()  # the time that the maze we're on began
     text_needing_acknowledgement = []  # structured like [ (COLOR, 'text')) ]
-    cursor_coordinates = (0, 0)
+    cursor_grid_coordinates = (0, 0)
+    # idk what a reasonable starting value is.
+    cursor_xy_coordinates = (WIDTH // 2, HEIGHT // 2)
+    pygame.mouse.set_pos(cursor_xy_coordinates)
 
     while run:
         clock.tick(FPS)
@@ -96,29 +102,46 @@ def game():
                 run = False
                 pygame.quit()
                 continue
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # these are the values of event.button depending on which is pressed:
+                # 1 - left click
+                # 2 - middle click
+                # 3 - right click
+                # 4 - scroll up
+                # 5 - scroll down
+                # see https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame
+                if event.button == 1:
+                    # left click
+                    cursor_grid_coordinates = mouse_pos_to_grid_coords(pygame.mouse.get_pos())
+                if event.button == 3:
+                    # right click
+                    pass
+                # as per the jam restrictions, these are the only allowed buttons
+
+            # escape should be allowed, right?
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
                     pygame.quit()
                     continue
-                if event.key == pygame.K_w:
-                    print(cursor_coordinates)
-                    if cursor_coordinates[1] > 0:
-                        cursor_coordinates = (cursor_coordinates[0], cursor_coordinates[1] - 1)
-                if event.key == pygame.K_a:
-                    print(cursor_coordinates)
-                    if cursor_coordinates[0] > 0:
-                        cursor_coordinates = (cursor_coordinates[0] - 1, cursor_coordinates[1])
-                if event.key == pygame.K_s:
-                    print(cursor_coordinates)
-                    if cursor_coordinates[1] < GRID_HEIGHT:
-                        cursor_coordinates = (cursor_coordinates[0], cursor_coordinates[1] + 1)
-                if event.key == pygame.K_d:
-                    print(cursor_coordinates)
-                    if cursor_coordinates[0] < GRID_WIDTH:
-                        cursor_coordinates = (cursor_coordinates[0] + 1, cursor_coordinates[1])
+            #     if event.key == pygame.K_w:
+            #         print(cursor_coordinates)
+            #         if cursor_coordinates[1] > 0:
+            #             cursor_coordinates = (cursor_coordinates[0], cursor_coordinates[1] - 1)
+            #     if event.key == pygame.K_a:
+            #         print(cursor_coordinates)
+            #         if cursor_coordinates[0] > 0:
+            #             cursor_coordinates = (cursor_coordinates[0] - 1, cursor_coordinates[1])
+            #     if event.key == pygame.K_s:
+            #         print(cursor_coordinates)
+            #         if cursor_coordinates[1] < GRID_HEIGHT:
+            #             cursor_coordinates = (cursor_coordinates[0], cursor_coordinates[1] + 1)
+            #     if event.key == pygame.K_d:
+            #         print(cursor_coordinates)
+            #         if cursor_coordinates[0] < GRID_WIDTH:
+            #             cursor_coordinates = (cursor_coordinates[0] + 1, cursor_coordinates[1])
 
-        draw_window(coordinates_to_xy(cursor_coordinates), frames_string)
+        draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string)
 
         frames += 1
         current_time_ms = pygame.time.get_ticks() % 1000
