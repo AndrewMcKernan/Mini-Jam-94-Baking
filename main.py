@@ -101,7 +101,7 @@ def game():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-                continue
+                break
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # these are the values of event.button depending on which is pressed:
                 # 1 - left click
@@ -140,7 +140,8 @@ def game():
             #         print(cursor_coordinates)
             #         if cursor_coordinates[0] < GRID_WIDTH:
             #             cursor_coordinates = (cursor_coordinates[0] + 1, cursor_coordinates[1])
-
+        if not run:
+            continue
         draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string)
 
         frames += 1
