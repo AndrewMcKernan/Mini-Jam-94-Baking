@@ -1,6 +1,6 @@
-1. Place units on the map
-2. Create an information display area on the bottom of the screen
-3. Display unit information on the bottom when mouse over occurs
+1. Place units on the map - done
+2. Create an information display area on the bottom of the screen - done
+3. Display unit information on the bottom when mouse click - done
 4. Add camera movement to accommodate for smaller screen size
 5. Allow units to move (based on an internal movement speed value) (potentially add obstacle logic here, otherwise step 8)
     5.1 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved
