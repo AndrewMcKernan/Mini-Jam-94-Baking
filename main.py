@@ -2,6 +2,7 @@ import os, sys
 import pygame
 from constants import *
 from draw_text import drawText
+from sprites import AlliedUnit, HostileUnit, UnitType
 
 if getattr(sys, 'frozen', False):
     os.chdir(sys._MEIPASS)
@@ -58,7 +59,7 @@ def mouse_pos_to_grid_coords(mouse_pos):
     return mouse_pos[0] // TILE_WIDTH, mouse_pos[1] // TILE_HEIGHT
 
 
-def draw_window(cursor_xy, fps):
+def draw_window(cursor_xy, fps, allied_units):
     pygame.draw.rect(WIN, BLACK, pygame.Rect(0, 0, WIDTH, HEIGHT))
 
     x = 0
@@ -73,6 +74,8 @@ def draw_window(cursor_xy, fps):
     draw_cursor(cursor_xy[0], cursor_xy[1])
 
     drawText(WIN, fps, WHITE, pygame.Rect(5, 5, 300, 300), TEXT_FONT, True)
+
+    allied_units.draw(WIN)
 
     pygame.display.update()
 
@@ -92,6 +95,12 @@ def game():
     # idk what a reasonable starting value is.
     cursor_xy_coordinates = (WIDTH // 2, HEIGHT // 2)
     pygame.mouse.set_pos(cursor_xy_coordinates)
+
+    starting_xy = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2))
+
+    egg_soldier = AlliedUnit(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, starting_xy[0], starting_xy[1])
+    allied_units = pygame.sprite.Group()
+    allied_units.add(egg_soldier)
 
     while run:
         clock.tick(FPS)
@@ -125,7 +134,7 @@ def game():
                     continue
         if not run:
             continue
-        draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string)
+        draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string, allied_units)
 
         frames += 1
         current_time_ms = pygame.time.get_ticks() % 1000
