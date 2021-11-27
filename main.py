@@ -20,8 +20,8 @@ BACKGROUND = pygame.Rect(0, 0, WIDTH, HEIGHT)
 ZOOMED_BACKGROUND = pygame.Rect(0, 0, ZOOMED_MAZE_WIDTH, ZOOMED_MAZE_HEIGHT)
 
 
-#BUDDY_IMAGE = pygame.image.load(os.path.join('assets', 'septo.png')).convert()
-#BUDDY_IMAGE.set_colorkey(TRANSPARENT)
+EGG_IMAGE = pygame.image.load(os.path.join('assets', 'egg.png')).convert()
+EGG_IMAGE.set_colorkey(TRANSPARENT)
 
 MAP_IMAGES = dict()
 
@@ -29,7 +29,7 @@ MAP_IMAGES = dict()
 #pygame.mixer.music.set_volume(0.1)
 #pygame.mixer.music.play(-1)
 
-#BUDDY = pygame.transform.scale(BUDDY_IMAGE, (BUDDY_WIDTH, BUDDY_HEIGHT))
+EGG_SURFACE = pygame.transform.scale(EGG_IMAGE, (TILE_WIDTH, TILE_HEIGHT))
 #ZOOMED_BUDDY = pygame.transform.scale(BUDDY_IMAGE, (ZOOMED_BUDDY_WIDTH, ZOOMED_BUDDY_HEIGHT))
 
 TEXT_FONT = pygame.font.SysFont('lucidaconsole', 40)
@@ -88,7 +88,6 @@ def game():
     time_ms = 0
     game_begin_time = pygame.time.get_ticks()  # the time that the game actually began
     start_time = pygame.time.get_ticks()  # the time that the maze we're on began
-    text_needing_acknowledgement = []  # structured like [ (COLOR, 'text')) ]
     cursor_grid_coordinates = (0, 0)
     # idk what a reasonable starting value is.
     cursor_xy_coordinates = (WIDTH // 2, HEIGHT // 2)
@@ -124,22 +123,6 @@ def game():
                     run = False
                     pygame.quit()
                     continue
-            #     if event.key == pygame.K_w:
-            #         print(cursor_coordinates)
-            #         if cursor_coordinates[1] > 0:
-            #             cursor_coordinates = (cursor_coordinates[0], cursor_coordinates[1] - 1)
-            #     if event.key == pygame.K_a:
-            #         print(cursor_coordinates)
-            #         if cursor_coordinates[0] > 0:
-            #             cursor_coordinates = (cursor_coordinates[0] - 1, cursor_coordinates[1])
-            #     if event.key == pygame.K_s:
-            #         print(cursor_coordinates)
-            #         if cursor_coordinates[1] < GRID_HEIGHT:
-            #             cursor_coordinates = (cursor_coordinates[0], cursor_coordinates[1] + 1)
-            #     if event.key == pygame.K_d:
-            #         print(cursor_coordinates)
-            #         if cursor_coordinates[0] < GRID_WIDTH:
-            #             cursor_coordinates = (cursor_coordinates[0] + 1, cursor_coordinates[1])
         if not run:
             continue
         draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string)

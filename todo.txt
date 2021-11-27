@@ -1,0 +1,23 @@
+1. Place units on the map
+2. Create an information display area on the bottom of the screen
+3. Display unit information on the bottom when mouse over occurs
+4. Add camera movement to accommodate for smaller screen size
+5. Allow units to move (based on an internal movement speed value) (potentially add obstacle logic here, otherwise step 8)
+    5.1 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved
+6. Add enemy units
+7. Allow allied units to attack enemies
+    7.1 Decide between a miss chance (like FE and SW Minis), or a damage roll (like Root)
+8. Add logic for obstacle and unit collision in path of unit move, if not done
+9. Add AI for enemy units, cause enemy turn to happen after player turn
+    9.1 Add a text indication when turn shifts
+10. Add terrain obstacles to map, ensure ally and enemy units are affected
+11. Add objectives to game to allow victory (place x units in y location)
+    11.1 Add multiple objectives (several locations)
+    11.2 Display victory when achieved and restart game
+12. Design map, come up with sprites, place enemies, allies, and terrain obstacles well
+13. Add sprite portraits in display portion of screen, if not done already
+14. Add special abilities to allied units (healing for sugar, stealth for chocolate, etc)
+15. Balance game for reasonable difficulty
+16. Add story explanation
+17. Add animations to combat
+18. Export game (do this early if you run out of time, haha)
