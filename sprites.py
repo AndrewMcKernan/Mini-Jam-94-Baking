@@ -95,7 +95,11 @@ class GoopSoldier(Unit):
     def attack(self, target):
         if target.hostile:
             return False
+        print("Before")
+        print(target.hp)
         target.hp -= self.attack_value
+        print("After")
+        print(target.hp)
         if target.hp < 0:
             target.kill()
         return True

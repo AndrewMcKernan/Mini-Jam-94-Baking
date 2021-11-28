@@ -54,33 +54,79 @@ def determine_legal_movement(movement, cell):
     i = movement
     return_set = set()
     while i >= 0:
-        possible_cells = get_possible_cells(cell)
+        possible_cells = get_possible_cells_movement(cell)
         return_set = return_set.union(possible_cells)
         for cells in possible_cells:
             more_cells = determine_legal_movement(movement - 1, cells)
             return_set = return_set.union(more_cells)
         i -= 1
-    if 15 in return_set:
-        print(movement, cell, return_set)
-        raise TypeError("Why")
+    return return_set
+
+def determine_legal_target(range, cell):
+    # I want to return a set of coordinates that area legal to target
+    # I need to generate all possible combinations of targets, and then ensure they are legal.
+    if range == 0:
+        return {(cell)}
+    i = range
+    return_set = set()
+    while i >= 0:
+        possible_cells = get_possible_cells_target(cell)
+        return_set = return_set.union(possible_cells)
+        for cells in possible_cells:
+            more_cells = determine_legal_target(range - 1, cells)
+            return_set = return_set.union(more_cells)
+        i -= 1
     return return_set
 
 
-def get_possible_cells(cell):
+def no_unit_at_grid_coordinates(coordinates):
+    xy = coordinates_to_xy(coordinates)
+    sprite = MouseSprite(xy)
+    mouse_colliding = pygame.sprite.spritecollide(sprite, all_sprites, False)
+    if len(mouse_colliding) < 1:
+        return True
+    return False
+
+
+def get_possible_cells_target(cell):
     possible_cells = set()
+    possible_cells.add(cell)
     for option in MOVEMENT_OPTIONS:
         if option == UP:
-            # TODO: is this space legal?
-            possible_cells.add((cell[0] - 1, cell[1]))
+            potential_cell = (cell[0] - 1, cell[1])
+            possible_cells.add(potential_cell)
         if option == DOWN:
-            # TODO: is this space legal?
-            possible_cells.add((cell[0] + 1, cell[1]))
+            potential_cell = (cell[0] + 1, cell[1])
+            possible_cells.add(potential_cell)
         if option == LEFT:
-            # TODO: is this space legal?
-            possible_cells.add((cell[0], cell[1] - 1))
+            potential_cell = (cell[0], cell[1] - 1)
+            possible_cells.add(potential_cell)
         if option == RIGHT:
-            # TODO: is this space legal?
-            possible_cells.add((cell[0], cell[1] + 1))
+            potential_cell = (cell[0], cell[1] + 1)
+            possible_cells.add(potential_cell)
+    return possible_cells
+
+
+def get_possible_cells_movement(cell):
+    possible_cells = set()
+    possible_cells.add(cell)
+    for option in MOVEMENT_OPTIONS:
+        if option == UP:
+            potential_cell = (cell[0] - 1, cell[1])
+            if no_unit_at_grid_coordinates(potential_cell):
+                possible_cells.add(potential_cell)
+        if option == DOWN:
+            potential_cell = (cell[0] + 1, cell[1])
+            if no_unit_at_grid_coordinates(potential_cell):
+                possible_cells.add(potential_cell)
+        if option == LEFT:
+            potential_cell = (cell[0], cell[1] - 1)
+            if no_unit_at_grid_coordinates(potential_cell):
+                possible_cells.add(potential_cell)
+        if option == RIGHT:
+            potential_cell = (cell[0], cell[1] + 1)
+            if no_unit_at_grid_coordinates(potential_cell):
+                possible_cells.add(potential_cell)
     return possible_cells
 
 
@@ -188,9 +234,6 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
     pygame.display.update()
 
 
-
-
-
 def add_sprite_to_group(sprite, group):
     group.add(sprite)
     # do not add the sprite twice if the group given is all_sprites
@@ -249,6 +292,14 @@ def game():
 
     action_menu_sprites_added = False
 
+    player_turn = True
+    start_of_player_turn = True
+    start_of_enemy_turn = False
+    defeated = False
+    victory = False
+
+    enemy_move_start_time = pygame.time.get_ticks()
+
     starting_xy = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2))
     starting_xy_goop = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 2))
 
@@ -256,6 +307,8 @@ def game():
     goop_soldier = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, starting_xy_goop[0], starting_xy_goop[1])
 
     allied_units = pygame.sprite.Group()
+    active_allied_units = pygame.sprite.Group()
+    active_hostile_units = pygame.sprite.Group()
     enemy_units = pygame.sprite.Group()
     add_sprite_to_group(egg_soldier, allied_units)
     add_sprite_to_group(goop_soldier, enemy_units)
@@ -265,6 +318,55 @@ def game():
     while run:
         clock.tick(FPS)
         move_camera(pygame.mouse.get_pos())
+
+        if len(active_hostile_units.sprites()) < 1 and not player_turn:
+            # I think this if statement can just be combined with the below one, but whatever
+            start_of_player_turn = True
+
+        if start_of_player_turn:
+            # add all allied units into the active group
+            if len(allied_units) < 1:
+                # TODO: show a message saying we have lost
+                defeated = True
+            active_allied_units.add(allied_units)
+            start_of_player_turn = False
+            player_turn = True
+            # TODO: show an indicator that the player turn has started
+
+        if len(active_allied_units.sprites()) < 1 and player_turn:
+            print("Enemy turn begins")
+            player_turn = False
+            active_hostile_units.add(enemy_units)
+            # TODO: show an indicator that the enemy turn has started
+
+        # move an enemy unit every 2 seconds
+        if not player_turn and len(active_hostile_units.sprites()) > 0 and enemy_move_start_time < pygame.time.get_ticks() - 2000:
+            enemy_move_start_time = pygame.time.get_ticks()
+            sprite = active_hostile_units.sprites()[0]
+
+            # from https://stackoverflow.com/questions/55579764/pygame-how-to-find-the-nearest-sprite-in-an-array-and-lock-onto-it
+            pos = pygame.math.Vector2(sprite.rect.x + sprite.rect.width // 2, sprite.rect.y + sprite.rect.height // 2)
+            targeted_unit = min([e for e in allied_units], key=lambda e: pos.distance_to(pygame.math.Vector2(e.rect.x + e.rect.width // 2, e.rect.y + e.rect.height // 2)))
+            legal_moves = determine_legal_movement(sprite.movement, sprite.get_grid_coordinates())
+            targeted_unit_coordinates = targeted_unit.get_grid_coordinates()
+            adjacent_squares = {(targeted_unit_coordinates[0] + 1, targeted_unit_coordinates[1]),
+                                (targeted_unit_coordinates[0] - 1, targeted_unit_coordinates[1]),
+                                (targeted_unit_coordinates[0], targeted_unit_coordinates[1] + 1),
+                                (targeted_unit_coordinates[0], targeted_unit_coordinates[1] - 1)}
+            for square in adjacent_squares:
+                if square in legal_moves:
+                    sprite.move_to_grid_coordinates(square)
+                    if sprite.actions["Attack"](targeted_unit):
+                        # attack success
+                        # TODO: play a sound effect
+                        break
+                    else:
+                        sprite.actions["Wait"](sprite)
+                        # TODO: play a sound effect
+                        break
+            active_hostile_units.remove(sprite)
+
+
         for event in pygame.event.get():
             # handle events
             if event.type == pygame.QUIT:
@@ -293,7 +395,7 @@ def game():
                         elif len(mouse_colliding) == 1:
                             # display the unit information on the bottom screen
                             sprite_to_display = mouse_colliding[0]
-                            if not sprite_to_display.hostile:
+                            if not sprite_to_display.hostile and active_allied_units.has(sprite_to_display):
                                 potential_cells_to_move = determine_legal_movement(sprite_to_display.movement, sprite_to_display.get_grid_coordinates())
                                 camera_mode = False
                                 moving_sprite_mode = True
@@ -320,10 +422,9 @@ def game():
                             pass
                         elif len(mouse_colliding) == 1:
                             # move into target mode
-                            print("here")
                             selecting_sprite_action_mode = False
                             selected_action_name = mouse_colliding[0].name
-                            potential_cells_to_target = determine_legal_movement(sprite_to_display.get_action_range(selected_action_name),
+                            potential_cells_to_target = determine_legal_target(sprite_to_display.get_action_range(selected_action_name),
                                                                                sprite_to_display.get_grid_coordinates())
                             sprite_targeting_mode = True
                         else:
@@ -343,6 +444,8 @@ def game():
                                 # TODO: play a sound effect based on the action performed
                                 sprite_targeting_mode = False
                                 camera_mode = True
+                                active_allied_units.remove(sprite_to_display)
+                                sprite_to_display = None
                             else:
                                 # the target was not successful, do not move on
                                 # TODO: play a sound effect indicating an improper targeting

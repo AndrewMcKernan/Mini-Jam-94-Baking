@@ -7,11 +7,11 @@
      should move them (not commited yet). Once moved, a menu should pop up beside them with options as to what actions
      you can take, likely attacking, healing, etc. Right clicking should cancel your previous action. - done, but can't take actions yet
     5.2 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved - NOT DONE
-6. Add enemy units
-7. Allow allied units to attack enemies
+6. Add enemy units - DONE
+7. Allow allied units to attack enemies - DONE
     7.1 Decide between a miss chance (like FE and SW Minis), or a damage roll (like Root)
-8. Add logic for obstacle and unit collision in path of unit move, if not done
-9. Add AI for enemy units, cause enemy turn to happen after player turn
+8. Add logic for obstacle and unit collision in path of unit move, if not done - DONE
+9. Add AI for enemy units, cause enemy turn to happen after player turn - DONE
     9.1 Add a text indication when turn shifts
 10. Add terrain obstacles to map, ensure ally and enemy units are affected
 11. Add objectives to game to allow victory (place x units in y location)
