@@ -13,8 +13,8 @@
 8. Add logic for obstacle and unit collision in path of unit move, if not done - DONE
 9. Add AI for enemy units, cause enemy turn to happen after player turn - DONE
     9.1 Add a text indication when turn shifts
-10. Add terrain obstacles to map, ensure ally and enemy units are affected
-11. Add objectives to game to allow victory (place x units in y location)
+10. Add terrain obstacles to map, ensure ally and enemy units are affected - DONE
+11. Add objectives to game to allow victory (place x units in y location) - DONE
     11.1 Add multiple objectives (several locations)
     11.2 Display victory when achieved and restart game
 12. Add descriptions of abilities and the objective in the bottom portion of the screen.

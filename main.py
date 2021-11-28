@@ -33,6 +33,18 @@ FORK_IMAGE.set_colorkey(TRANSPARENT)
 MOUSE_IMAGE = pygame.image.load(os.path.join('assets', 'mouse.png')).convert()
 MOUSE_IMAGE.set_colorkey(TRANSPARENT)
 
+VICTORY_IMAGE = pygame.image.load(os.path.join('assets', 'victory.png')).convert()
+VICTORY_IMAGE.set_colorkey(TRANSPARENT)
+
+VICTORY_IMAGE_SHADOW = pygame.image.load(os.path.join('assets', 'victory_shadow.png')).convert()
+VICTORY_IMAGE_SHADOW.set_colorkey(TRANSPARENT)
+
+DEFEAT_IMAGE = pygame.image.load(os.path.join('assets', 'defeat.png')).convert()
+DEFEAT_IMAGE.set_colorkey(TRANSPARENT)
+
+DEFEAT_IMAGE_SHADOW = pygame.image.load(os.path.join('assets', 'defeat_shadow.png')).convert()
+DEFEAT_IMAGE_SHADOW.set_colorkey(TRANSPARENT)
+
 MAP_IMAGES = dict()
 
 #pygame.mixer.music.load(os.path.join('assets', 'Spy.mp3'))
@@ -41,18 +53,33 @@ MAP_IMAGES = dict()
 
 MOUSE_SURFACE = pygame.transform.scale(MOUSE_IMAGE, (200, 200))
 
+VICTORY_SURFACE = pygame.transform.scale(VICTORY_IMAGE, (150 * 4, 83 * 4))
+VICTORY_SHADOW_SURFACE = pygame.transform.scale(VICTORY_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
+DEFEAT_SURFACE = pygame.transform.scale(DEFEAT_IMAGE, (150 * 4, 83 * 4))
+DEFEAT_SHADOW_SURFACE = pygame.transform.scale(DEFEAT_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
 TEXT_FONT = pygame.font.SysFont('lucidaconsole', 40)
 DESC_FONT = pygame.font.SysFont('lucidaconsole', 20)
 CELL_FONT = pygame.font.SysFont('lucidaconsole', 25)
+BABY_FONT = pygame.font.SysFont('lucidaconsole', 23)
 
 all_sprites = pygame.sprite.Group()
 terrain_sprites = pygame.sprite.Group()
 menu_sprites = pygame.sprite.Group()
 
+victory_area_1 = {
+        (40,20),
+        (41,20),
+        (41,21),
+        (40,21)
+}
+
 
 def determine_legal_target_faster(attack_range, cell):
     i = attack_range
     legal_squares = set()
+    legal_squares.add(cell)
     while abs(i) <= attack_range:
         legal_squares.add((cell[0] + i, cell[1]))
         for n in range(attack_range - abs(i)):
@@ -65,6 +92,7 @@ def determine_legal_target_faster(attack_range, cell):
 def determine_legal_movement_faster(movement, cell, enemy=False):
     i = movement
     legal_squares = set()
+    legal_squares.add(cell)
     while abs(i) <= movement:
         cell_to_check = (cell[0] + i, cell[1])
         if is_there_a_path(cell, cell_to_check, movement, set(), enemy):
@@ -99,12 +127,8 @@ def get_unvisited_neighbors(cell, visited):
 
 def is_there_a_path(source, dest, movement_range, visited, enemy):
     visited.add(source)
-    if dest == (36, 19):
-        print('lol')
     if source[0] == dest[0] and source[1] == dest[1]:
         # we can't end on the same space as another unit, even if it is an ally.
-        if dest == (36, 19):
-            print('lol2')
         return no_unit_at_grid_coordinates(source)
     elif movement_range == 0:
         return False
@@ -213,23 +237,6 @@ def is_there_a_path(source, dest, movement_range, visited, enemy):
         return False
 
 
-def determine_legal_target(range, cell):
-    # I want to return a set of coordinates that area legal to target
-    # I need to generate all possible combinations of targets, and then ensure they are legal.
-    if range == 0:
-        return {(cell)}
-    i = range
-    return_set = set()
-    while i >= 0:
-        possible_cells = get_possible_cells_target(cell)
-        return_set = return_set.union(possible_cells)
-        for cells in possible_cells:
-            more_cells = determine_legal_target(range - 1, cells)
-            return_set = return_set.union(more_cells)
-        i -= 1
-    return return_set
-
-
 def no_unit_at_grid_coordinates(coordinates):
     xy = coordinates_to_xy(coordinates)
     sprite = MouseSprite(xy)
@@ -250,48 +257,6 @@ def get_unit_at_grid_coordinates(coordinates):
         return mouse_colliding[0]
     else:
         return None
-
-
-def get_possible_cells_target(cell):
-    possible_cells = set()
-    possible_cells.add(cell)
-    for option in MOVEMENT_OPTIONS:
-        if option == UP:
-            potential_cell = (cell[0] - 1, cell[1])
-            possible_cells.add(potential_cell)
-        if option == DOWN:
-            potential_cell = (cell[0] + 1, cell[1])
-            possible_cells.add(potential_cell)
-        if option == LEFT:
-            potential_cell = (cell[0], cell[1] - 1)
-            possible_cells.add(potential_cell)
-        if option == RIGHT:
-            potential_cell = (cell[0], cell[1] + 1)
-            possible_cells.add(potential_cell)
-    return possible_cells
-
-
-def get_possible_cells_movement(cell):
-    possible_cells = set()
-    possible_cells.add(cell)
-    for option in MOVEMENT_OPTIONS:
-        if option == UP:
-            potential_cell = (cell[0] - 1, cell[1])
-            if no_unit_at_grid_coordinates(potential_cell):
-                possible_cells.add(potential_cell)
-        if option == DOWN:
-            potential_cell = (cell[0] + 1, cell[1])
-            if no_unit_at_grid_coordinates(potential_cell):
-                possible_cells.add(potential_cell)
-        if option == LEFT:
-            potential_cell = (cell[0], cell[1] - 1)
-            if no_unit_at_grid_coordinates(potential_cell):
-                possible_cells.add(potential_cell)
-        if option == RIGHT:
-            potential_cell = (cell[0], cell[1] + 1)
-            if no_unit_at_grid_coordinates(potential_cell):
-                possible_cells.add(potential_cell)
-    return possible_cells
 
 
 def draw_cursor(x, y):
@@ -321,13 +286,12 @@ def mouse_xy_to_map_xy(mouse_pos):
 
 
 def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential_cells_to_move, selecting_sprite_action_mode,
-                action_menu_sprites_added, sprite_targeting_mode, potential_cells_to_target):
+                action_menu_sprites_added, sprite_targeting_mode, potential_cells_to_target, victory, defeat):
     pygame.draw.rect(ZOOMED_MAP, GRAY, pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT))
 
     bottom_left_rect = pygame.Rect(0, HEIGHT - 200, 200, 200)
     middle_rect = pygame.Rect(200, HEIGHT - 150, WIDTH - 400, 150)
     bottom_right_rect = pygame.Rect(WIDTH - 200, HEIGHT - 200, 200, 200)
-
 
     x = 0
     while x < ZOOMED_MAP_WIDTH:
@@ -342,7 +306,11 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
 
     all_sprites.draw(ZOOMED_MAP)
 
-    # allied_units.draw(ZOOMED_MAP)
+    for cell in victory_area_1:
+        surface = pygame.Surface((TILE_WIDTH, TILE_HEIGHT))
+        surface.set_alpha(64)
+        surface.fill(YELLOW)
+        ZOOMED_MAP.blit(surface, coordinates_to_xy(cell))
 
     if moving_sprite_mode:
         for cell in potential_cells_to_move:
@@ -383,6 +351,7 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
     pygame.draw.rect(WIN, BLACK, bottom_left_rect)
     WIN.blit(MOUSE_SURFACE, (bottom_left_rect.x, bottom_left_rect.y))
     pygame.draw.rect(WIN, BLACK, bottom_right_rect)
+    drawText(WIN, "Victory Condition: Begin your turn with at least one allied unit and no enemy units in all yellow areas.", WHITE, bottom_right_rect, BABY_FONT, True)
     pygame.draw.rect(WIN, BLACK, middle_rect)
     if sprite_to_display is None:
         pass
@@ -395,6 +364,21 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
         drawText(WIN, "Movement: " + str(sprite_to_display.movement), WHITE, next_rect, TEXT_FONT, True)
 
     drawText(WIN, fps, WHITE, pygame.Rect(5, 5, 300, 300), TEXT_FONT, True)
+
+    if victory:
+        WIN.blit(VICTORY_SHADOW_SURFACE,
+                 (WIDTH // 2 - VICTORY_SURFACE.get_width() // 2 + 10,
+                  HEIGHT // 2 - VICTORY_SURFACE.get_height() // 2 + 10))
+        WIN.blit(VICTORY_SURFACE, (WIDTH // 2 - VICTORY_SURFACE.get_width() // 2, HEIGHT // 2 - VICTORY_SURFACE.get_height() // 2))
+        drawText(WIN, "Use the left or right mouse button to restart!", WHITE, pygame.Rect(WIDTH // 2 - VICTORY_SURFACE.get_width() // 2, HEIGHT // 2 - VICTORY_SURFACE.get_height() // 2 + 270, 500, 500), TEXT_FONT, True)
+
+    if defeat:
+        WIN.blit(DEFEAT_SHADOW_SURFACE,
+                 (WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2 + 10,
+                  HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2 + 10))
+        WIN.blit(DEFEAT_SURFACE, (WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2, HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2))
+        drawText(WIN, "Use the left or right mouse button to restart!", WHITE, pygame.Rect(WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2, HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2 + 270, 500, 500), TEXT_FONT, True)
+
     pygame.display.update()
 
 
@@ -426,6 +410,16 @@ def move_camera(mouse_pos):
             camera.y += CAMERA_SPEED
         else:
             camera.y = ZOOMED_MAP_HEIGHT - HEIGHT
+
+
+def victory_condition_1(allied_sprites, enemy_sprites):
+
+    for enemy in enemy_sprites:
+        if enemy.get_grid_coordinates() in victory_area_1:
+            return False
+    for ally in allied_sprites:
+        if ally.get_grid_coordinates() in victory_area_1:
+            return True
 
 
 def game():
@@ -493,8 +487,16 @@ def game():
 
         if start_of_player_turn:
             # add all allied units into the active group
+
+            if victory_condition_1(allied_units.sprites(), enemy_units.sprites()):
+                victory = True
+                print("MISSION COMPLETE BABY")
+                # We have won.
+                # TODO: play fanfare sound
+
             if len(allied_units) < 1:
-                # TODO: show a message saying we have lost
+                # TODO: play sad fanfare sound
+                print("MISSION FAILED, WE'LL GET EM NEXT TIME")
                 defeated = True
             active_allied_units.add(allied_units)
             start_of_player_turn = False
@@ -507,7 +509,7 @@ def game():
             # TODO: show an indicator that the enemy turn has started
 
         # move an enemy unit every 2 seconds
-        if not player_turn and len(active_hostile_units.sprites()) > 0 and enemy_move_start_time < pygame.time.get_ticks() - 2000:
+        if not defeated and not player_turn and len(active_hostile_units.sprites()) > 0 and enemy_move_start_time < pygame.time.get_ticks() - 2000:
             enemy_move_start_time = pygame.time.get_ticks()
             sprite = active_hostile_units.sprites()[0]
 
@@ -533,7 +535,6 @@ def game():
                         break
             active_hostile_units.remove(sprite)
 
-
         for event in pygame.event.get():
             # handle events
             if event.type == pygame.QUIT:
@@ -552,6 +553,9 @@ def game():
                 # see https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame
                 if event.button == 1:
                     # left click
+                    if victory or defeated:
+                        restart = True
+                        run = False
                     if camera_mode:
                         cursor_grid_coordinates = mouse_pos_to_grid_coords(pygame.mouse.get_pos())
                         mouse_sprite = MouseSprite(mouse_xy_to_map_xy(pygame.mouse.get_pos()))
@@ -559,7 +563,7 @@ def game():
                         if len(mouse_colliding) > 1:
                             # lol what
                             pass
-                        elif len(mouse_colliding) == 1:
+                        elif len(mouse_colliding) == 1 and not isinstance(mouse_colliding[0], Terrain):
                             # display the unit information on the bottom screen
                             sprite_to_display = mouse_colliding[0]
                             if not sprite_to_display.hostile and active_allied_units.has(sprite_to_display):
@@ -621,6 +625,9 @@ def game():
                             # TODO: play a sound effect indicating an improper targeting
                             pass
                 if event.button == 3:
+                    if victory:
+                        restart = True
+                        run = False
                     if camera_mode:
                         # right click
                         sprite_to_display = None
@@ -652,7 +659,7 @@ def game():
             continue
         draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string, sprite_to_display, moving_sprite_mode,
                     potential_cells_to_move, selecting_sprite_action_mode, action_menu_sprites_added,
-                    sprite_targeting_mode, potential_cells_to_target)
+                    sprite_targeting_mode, potential_cells_to_target, victory, defeated)
         if not action_menu_sprites_added:
             action_menu_sprites_added = True
 
