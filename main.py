@@ -50,21 +50,168 @@ terrain_sprites = pygame.sprite.Group()
 menu_sprites = pygame.sprite.Group()
 
 
-def determine_legal_movement(movement, cell):
-    # I want to return a set of coordinates that area legal to move into
-    # I need to generate all possible combinations of moves, and then apply those moves to ensure they are legal.
-    if movement == 0:
-        return {(cell)}
-    i = movement
-    return_set = set()
-    while i >= 0:
-        possible_cells = get_possible_cells_movement(cell)
-        return_set = return_set.union(possible_cells)
-        for cells in possible_cells:
-            more_cells = determine_legal_movement(movement - 1, cells)
-            return_set = return_set.union(more_cells)
+def determine_legal_target_faster(attack_range, cell):
+    i = attack_range
+    legal_squares = set()
+    while abs(i) <= attack_range:
+        legal_squares.add((cell[0] + i, cell[1]))
+        for n in range(attack_range - abs(i)):
+            legal_squares.add((cell[0] + i, cell[1] + (n + 1)))
+            legal_squares.add((cell[0] + i, cell[1] - (n + 1)))
         i -= 1
-    return return_set
+    return legal_squares
+
+
+def determine_legal_movement_faster(movement, cell, enemy=False):
+    i = movement
+    legal_squares = set()
+    while abs(i) <= movement:
+        cell_to_check = (cell[0] + i, cell[1])
+        if is_there_a_path(cell, cell_to_check, movement, set(), enemy):
+            legal_squares.add(cell_to_check)
+        for n in range(movement-abs(i)):
+            cell_to_check = (cell[0] + i, cell[1] + (n + 1))
+            if is_there_a_path(cell, cell_to_check, movement, set(), enemy):
+                legal_squares.add(cell_to_check)
+            cell_to_check = (cell[0] + i, cell[1] - (n + 1))
+            if is_there_a_path(cell, cell_to_check, movement, set(), enemy):
+                legal_squares.add(cell_to_check)
+        i -= 1
+    return legal_squares
+
+
+def get_unvisited_neighbors(cell, visited):
+    unvisited_neighbors = set()
+    check_cell = (cell[0] + 1, cell[1])
+    if check_cell not in visited:
+        unvisited_neighbors.add(check_cell)
+    check_cell = (cell[0] - 1, cell[1])
+    if check_cell not in visited:
+        unvisited_neighbors.add(check_cell)
+    check_cell = (cell[0], cell[1] + 1)
+    if check_cell not in visited:
+        unvisited_neighbors.add(check_cell)
+    check_cell = (cell[0], cell[1] - 1)
+    if check_cell not in visited:
+        unvisited_neighbors.add(check_cell)
+    return unvisited_neighbors
+
+
+def is_there_a_path(source, dest, movement_range, visited, enemy):
+    visited.add(source)
+    if dest == (36, 19):
+        print('lol')
+    if source[0] == dest[0] and source[1] == dest[1]:
+        # we can't end on the same space as another unit, even if it is an ally.
+        if dest == (36, 19):
+            print('lol2')
+        return no_unit_at_grid_coordinates(source)
+    elif movement_range == 0:
+        return False
+
+    move_x = True
+    if dest[0] < source[0]:
+        left = True
+    elif dest[0] > source[0]:
+        left = False
+    else:
+        move_x = False
+
+    move_y = True
+    if dest[1] < source[1]:
+        up = True
+    elif dest[1] > source[1]:
+        up = False
+    else:
+        move_y = False
+
+    if move_x:
+        if left:
+            next_cell = (source[0] - 1, source[1])
+            if no_unit_at_grid_coordinates(next_cell):
+                if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                    return True
+            else:
+                sprite_there = get_unit_at_grid_coordinates(next_cell)
+                if isinstance(sprite_there, Unit) and not sprite_there.hostile and not enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                # enemies can move through each other
+                if isinstance(sprite_there, Unit) and sprite_there.hostile and enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                else:
+                    # we cannot move here at all. We must try another path.
+                    visited.add(next_cell)
+                    for neighbor in get_unvisited_neighbors(source, visited):
+                        if is_there_a_path(neighbor, dest, movement_range-1, visited, enemy):
+                            return True
+        else:
+            next_cell = (source[0] + 1, source[1])
+            if no_unit_at_grid_coordinates(next_cell):
+                if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                    return True
+            else:
+                sprite_there = get_unit_at_grid_coordinates(next_cell)
+                if isinstance(sprite_there, Unit) and not sprite_there.hostile and not enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                # enemies can move through each other
+                if isinstance(sprite_there, Unit) and sprite_there.hostile and enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                else:
+                    # we cannot move here at all. We must try another path.
+                    visited.add(next_cell)
+                    for neighbor in get_unvisited_neighbors(source, visited):
+                        if is_there_a_path(neighbor, dest, movement_range-1, visited, enemy):
+                            return True
+    if move_y:
+        if up:
+            next_cell = (source[0], source[1] - 1)
+            if no_unit_at_grid_coordinates(next_cell):
+                if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                    return True
+            else:
+                sprite_there = get_unit_at_grid_coordinates(next_cell)
+                if isinstance(sprite_there, Unit) and not sprite_there.hostile and not enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                # enemies can move through each other
+                if isinstance(sprite_there, Unit) and sprite_there.hostile and enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                else:
+                    # we cannot move here at all. We must try another path.
+                    visited.add(next_cell)
+                    for neighbor in get_unvisited_neighbors(source, visited):
+                        if is_there_a_path(neighbor, dest, movement_range-1, visited, enemy):
+                            return True
+        else:
+            next_cell = (source[0], source[1] + 1)
+            if no_unit_at_grid_coordinates(next_cell):
+                if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                    return True
+            else:
+                sprite_there = get_unit_at_grid_coordinates(next_cell)
+                if isinstance(sprite_there, Unit) and not sprite_there.hostile and not enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                # enemies can move through each other
+                if isinstance(sprite_there, Unit) and sprite_there.hostile and enemy:
+                    if is_there_a_path(next_cell, dest, movement_range - 1, visited, enemy):
+                        return True
+                else:
+                    # we cannot move here at all. We must try another path.
+                    visited.add(next_cell)
+                    for neighbor in get_unvisited_neighbors(source, visited):
+                        if is_there_a_path(neighbor, dest, movement_range-1, visited, enemy):
+                            return True
+    else:
+        # https://youtu.be/6M-NkQAo-3E?t=20
+        # if we make it here, it's not a valid path. I think.
+        return False
+
 
 def determine_legal_target(range, cell):
     # I want to return a set of coordinates that area legal to target
@@ -90,6 +237,19 @@ def no_unit_at_grid_coordinates(coordinates):
     if len(mouse_colliding) < 1:
         return True
     return False
+
+
+def get_unit_at_grid_coordinates(coordinates):
+    xy = coordinates_to_xy(coordinates)
+    sprite = MouseSprite(xy)
+    mouse_colliding = pygame.sprite.spritecollide(sprite, all_sprites, False)
+    if len(mouse_colliding) == 1:
+        return mouse_colliding[0]
+    elif len(mouse_colliding) > 1:
+        # multiple, shouldn't be allowed but could happen. Just grab the first one I guess.
+        return mouse_colliding[0]
+    else:
+        return None
 
 
 def get_possible_cells_target(cell):
@@ -354,7 +514,7 @@ def game():
             # from https://stackoverflow.com/questions/55579764/pygame-how-to-find-the-nearest-sprite-in-an-array-and-lock-onto-it
             pos = pygame.math.Vector2(sprite.rect.x + sprite.rect.width // 2, sprite.rect.y + sprite.rect.height // 2)
             targeted_unit = min([e for e in allied_units], key=lambda e: pos.distance_to(pygame.math.Vector2(e.rect.x + e.rect.width // 2, e.rect.y + e.rect.height // 2)))
-            legal_moves = determine_legal_movement(sprite.movement, sprite.get_grid_coordinates())
+            legal_moves = determine_legal_movement_faster(sprite.movement, sprite.get_grid_coordinates(), True)
             targeted_unit_coordinates = targeted_unit.get_grid_coordinates()
             adjacent_squares = {(targeted_unit_coordinates[0] + 1, targeted_unit_coordinates[1]),
                                 (targeted_unit_coordinates[0] - 1, targeted_unit_coordinates[1]),
@@ -403,7 +563,7 @@ def game():
                             # display the unit information on the bottom screen
                             sprite_to_display = mouse_colliding[0]
                             if not sprite_to_display.hostile and active_allied_units.has(sprite_to_display):
-                                potential_cells_to_move = determine_legal_movement(sprite_to_display.movement, sprite_to_display.get_grid_coordinates())
+                                potential_cells_to_move = determine_legal_movement_faster(sprite_to_display.movement, sprite_to_display.get_grid_coordinates())
                                 camera_mode = False
                                 moving_sprite_mode = True
                         else:
@@ -431,7 +591,7 @@ def game():
                             # move into target mode
                             selecting_sprite_action_mode = False
                             selected_action_name = mouse_colliding[0].name
-                            potential_cells_to_target = determine_legal_target(sprite_to_display.get_action_range(selected_action_name),
+                            potential_cells_to_target = determine_legal_target_faster(sprite_to_display.get_action_range(selected_action_name),
                                                                                sprite_to_display.get_grid_coordinates())
                             sprite_targeting_mode = True
                         else:
