@@ -57,6 +57,12 @@ ENEMY_PHASE_IMAGE.set_colorkey(TRANSPARENT)
 ENEMY_PHASE_IMAGE_SHADOW = pygame.image.load(os.path.join('assets', 'enemy_turn_shadow.png')).convert()
 ENEMY_PHASE_IMAGE_SHADOW.set_colorkey(TRANSPARENT)
 
+WATER_TECTURE_IMAGE = pygame.image.load(os.path.join('assets', 'water.png')).convert()
+WATER_TECTURE_IMAGE.set_colorkey(TRANSPARENT)
+
+WOOD_TEXTURE_IMAGE = pygame.image.load(os.path.join('assets', 'wood-16x16.png')).convert()
+WOOD_TEXTURE_IMAGE.set_colorkey(TRANSPARENT)
+
 MAP_IMAGES = dict()
 
 #pygame.mixer.music.load(os.path.join('assets', 'Spy.mp3'))
@@ -76,6 +82,8 @@ PLAYER_PHASE_SHADOW_SURFACE = pygame.transform.scale(PLAYER_PHASE_IMAGE_SHADOW, 
 
 ENEMY_PHASE_SURFACE = pygame.transform.scale(ENEMY_PHASE_IMAGE, (150 * 4, 83 * 4))
 ENEMY_PHASE_SHADOW_SURFACE = pygame.transform.scale(ENEMY_PHASE_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
+WOOD_SURFACE = pygame.transform.scale(WOOD_TEXTURE_IMAGE, (80, 80))
 
 TEXT_FONT = pygame.font.SysFont('lucidaconsole', 40)
 DESC_FONT = pygame.font.SysFont('lucidaconsole', 20)
@@ -312,16 +320,19 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
     middle_rect = pygame.Rect(200, HEIGHT - 150, WIDTH - 400, 150)
     bottom_right_rect = pygame.Rect(WIDTH - 200, HEIGHT - 200, 200, 200)
 
-    x = 0
-    while x < ZOOMED_MAP_WIDTH:
-        pygame.draw.line(ZOOMED_MAP, RED, (x, 0), (x, ZOOMED_MAP_HEIGHT))
-        x += TILE_WIDTH
-    y = 0
-    while y < ZOOMED_MAP_HEIGHT:
-        pygame.draw.line(ZOOMED_MAP, RED, (0, y), (ZOOMED_MAP_WIDTH, y))
-        y += TILE_HEIGHT
+    # x = 0
+    # while x < ZOOMED_MAP_WIDTH:
+    #     pygame.draw.line(ZOOMED_MAP, RED, (x, 0), (x, ZOOMED_MAP_HEIGHT))
+    #     x += TILE_WIDTH
+    # y = 0
+    # while y < ZOOMED_MAP_HEIGHT:
+    #     pygame.draw.line(ZOOMED_MAP, RED, (0, y), (ZOOMED_MAP_WIDTH, y))
+    #     y += TILE_HEIGHT
 
-    draw_cursor(cursor_xy[0], cursor_xy[1])
+    for i in range(GRID_WIDTH):
+        for n in range(GRID_HEIGHT):
+            ZOOMED_MAP.blit(WOOD_SURFACE, coordinates_to_xy((i, n)))
+
 
     all_sprites.draw(ZOOMED_MAP)
 
@@ -364,6 +375,8 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
             surface.set_alpha(128)
             surface.fill(RED)
             ZOOMED_MAP.blit(surface, coordinates_to_xy(cell))
+
+    draw_cursor(cursor_xy[0], cursor_xy[1])
 
     WIN.blit(ZOOMED_MAP, (0, 0), camera)
 
@@ -457,6 +470,257 @@ def victory_condition_1(allied_sprites, enemy_sprites):
             return True
 
 
+def generate_terrain():
+    # bottom of the map
+    for i in range(GRID_WIDTH):
+        for n in range(4):
+            xy = coordinates_to_xy((i, 22 + n))
+            water_terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(water_terrain, terrain_sprites)
+
+    # bottom left wall
+    for i in range(8):
+        xy = coordinates_to_xy((i, 21))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # bottom right wall
+    for i in range(13):
+        xy = coordinates_to_xy((13 + i, 21))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # bottom left bit of water
+    for i in range(3):
+        xy = coordinates_to_xy((3 + i, 20))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # bottom left chunk of water
+    for i in range(3):
+        for n in range(8):
+            xy = coordinates_to_xy((3 + i, 18 - n))
+            terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # small buildings right of the bottom left chunk of water
+    for i in range(3):
+        xy = coordinates_to_xy((6, 18 - i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # middle row of blocking buildings
+    for i in range(3):
+        xy = coordinates_to_xy((9 + i, 12))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # large chunk of water on the bottom right, p1
+    for i in range(4):
+        for n in range(7):
+            xy = coordinates_to_xy((15 + i, 17 - n))
+            terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # large chunk of water on the bottom right, p2
+    for i in range(3):
+        for n in range(3):
+            xy = coordinates_to_xy((19 + i, 17 - n))
+            terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # large chunk of water on the bottom right, p3
+    for i in range(3):
+        for n in range(3):
+            xy = coordinates_to_xy((23 + i, 17 - n))
+            terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # long, thin row of buildings on the right
+    for i in range(11):
+        xy = coordinates_to_xy((22, 12 - i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p1
+    for i in range(5):
+        xy = coordinates_to_xy((3, 4 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p2
+    for i in range(3):
+        xy = coordinates_to_xy((4, 6 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p3
+    for i in range(2):
+        xy = coordinates_to_xy((5, 7 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p4
+    for i in range(1):
+        xy = coordinates_to_xy((6, 8 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p5
+    for i in range(2):
+        xy = coordinates_to_xy((7, 7 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p6
+    for i in range(3):
+        xy = coordinates_to_xy((8, 6 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p7
+    for i in range(7):
+        xy = coordinates_to_xy((9, 2 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p8
+    for i in range(9):
+        for n in range(2):
+            xy = coordinates_to_xy((10 + n, i))
+            terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p9
+    for i in range(7):
+        xy = coordinates_to_xy((12, 2 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p10
+    for i in range(3):
+        xy = coordinates_to_xy((13, 6 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p11
+    for i in range(2):
+        xy = coordinates_to_xy((14, 7 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p12
+    for i in range(1):
+        xy = coordinates_to_xy((15, 8 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p13
+    for i in range(2):
+        xy = coordinates_to_xy((16, 7 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p14
+    for i in range(3):
+        xy = coordinates_to_xy((17, 6 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # main body of water, left side p15
+    for i in range(5):
+        xy = coordinates_to_xy((18, 4 + i))
+        terrain = Terrain(WATER_TECTURE_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # square building, top left
+    for i in range(2):
+        for n in range(2):
+            xy = coordinates_to_xy((3 + n, i))
+            terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 1
+    for i in range(2):
+        xy = coordinates_to_xy((4, 4 + i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 2
+    for i in range(1):
+        xy = coordinates_to_xy((5 + i, 6))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 3
+    for i in range(1):
+        xy = coordinates_to_xy((6 + i, 7))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 4
+    for i in range(1):
+        xy = coordinates_to_xy((7 + i, 6))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 5
+    for i in range(6):
+        xy = coordinates_to_xy((8, i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 6
+    for i in range(2):
+        xy = coordinates_to_xy((9, i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 7
+    for i in range(2):
+        for n in range(2):
+            xy = coordinates_to_xy((12 + n, i))
+            terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 7
+    for i in range(4):
+        xy = coordinates_to_xy((13, 2 + i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 8
+    for i in range(1):
+        xy = coordinates_to_xy((14, 6 + i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 9
+    for i in range(1):
+        xy = coordinates_to_xy((15, 7 + i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 10
+    for i in range(1):
+        xy = coordinates_to_xy((16, 6 + i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # water rim, part 11
+    for i in range(2):
+        xy = coordinates_to_xy((17, 4 + i))
+        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        add_sprite_to_group(terrain, terrain_sprites)
+
+    # square building, upper right
+    for i in range(2):
+        for n in range(2):
+            xy = coordinates_to_xy((17 + n, i))
+            terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            add_sprite_to_group(terrain, terrain_sprites)
+
+
 def game():
     pygame.event.set_grab(True)
     restart = False
@@ -495,21 +759,25 @@ def game():
 
     enemy_move_start_time = pygame.time.get_ticks()
 
-    starting_xy = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2))
+    starting_xy = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 + 3))
     starting_xy_goop = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 2))
     starting_xy_fork = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 1))
 
     egg_soldier = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, starting_xy[0], starting_xy[1])
-    goop_soldier = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, starting_xy_goop[0], starting_xy_goop[1])
-    fork_terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, starting_xy_fork[0], starting_xy_fork[1])
-    add_sprite_to_group(fork_terrain, terrain_sprites)
+    egg_soldier2 = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, starting_xy[0] + 80, starting_xy[1])
+    #goop_soldier = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, starting_xy_goop[0], starting_xy_goop[1])
+    #fork_terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, starting_xy_fork[0], starting_xy_fork[1])
+    #add_sprite_to_group(fork_terrain, terrain_sprites)
+
+    generate_terrain()
 
     allied_units = pygame.sprite.Group()
     active_allied_units = pygame.sprite.Group()
     active_hostile_units = pygame.sprite.Group()
     enemy_units = pygame.sprite.Group()
     add_sprite_to_group(egg_soldier, allied_units)
-    add_sprite_to_group(goop_soldier, enemy_units)
+    add_sprite_to_group(egg_soldier2, allied_units)
+    #add_sprite_to_group(goop_soldier, enemy_units)
     sprite_to_display = None
     sprite_moving_current_coordinates = None
     description_to_display = None
@@ -546,6 +814,9 @@ def game():
             player_turn = False
             active_hostile_units.add(enemy_units)
             show_enemy_phase_start = True
+            if len(active_hostile_units) < 1:
+                start_of_player_turn = True
+                show_enemy_phase_start = False
             enemy_move_start_time = pygame.time.get_ticks()
 
         enemy_turn_length = 1000  # ms
@@ -683,11 +954,12 @@ def game():
                             # TODO: play a sound effect indicating an improper targeting
                             pass
                 if event.button == 3:
+                    # right click
                     if victory:
                         restart = True
                         run = False
                     if camera_mode:
-                        # right click
+                        show_player_phase_start = False
                         sprite_to_display = None
                     elif moving_sprite_mode:
                         moving_sprite_mode = False

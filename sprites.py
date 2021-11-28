@@ -74,7 +74,7 @@ class EggSoldier(Unit):
             return 1
 
     def attack(self, target):
-        if not target.hostile:
+        if not isinstance(target, Unit) or not target.hostile:
             return False
         target.hp -= self.attack_value
         if target.hp < 0:
