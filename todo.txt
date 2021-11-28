@@ -1,9 +1,12 @@
 1. Place units on the map - done
 2. Create an information display area on the bottom of the screen - done
 3. Display unit information on the bottom when mouse click - done
-4. Add camera movement to accommodate for smaller screen size
+4. Add camera movement to accommodate for smaller screen size - done
 5. Allow units to move (based on an internal movement speed value) (potentially add obstacle logic here, otherwise step 8)
-    5.1 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved
+    5.1 To move, when a unit is selected, the area around them that they can move should light up blue. Clicking again
+     should move them (not commited yet). Once moved, a menu should pop up beside them with options as to what actions
+     you can take, likely attacking, healing, etc. Right clicking should cancel your previous action. - done, but can't take actions yet
+    5.2 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved - NOT DONE
 6. Add enemy units
 7. Allow allied units to attack enemies
     7.1 Decide between a miss chance (like FE and SW Minis), or a damage roll (like Root)
