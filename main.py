@@ -45,6 +45,18 @@ DEFEAT_IMAGE.set_colorkey(TRANSPARENT)
 DEFEAT_IMAGE_SHADOW = pygame.image.load(os.path.join('assets', 'defeat_shadow.png')).convert()
 DEFEAT_IMAGE_SHADOW.set_colorkey(TRANSPARENT)
 
+PLAYER_PHASE_IMAGE = pygame.image.load(os.path.join('assets', 'player_turn.png')).convert()
+PLAYER_PHASE_IMAGE.set_colorkey(TRANSPARENT)
+
+PLAYER_PHASE_IMAGE_SHADOW = pygame.image.load(os.path.join('assets', 'player_turn_shadow.png')).convert()
+PLAYER_PHASE_IMAGE_SHADOW.set_colorkey(TRANSPARENT)
+
+ENEMY_PHASE_IMAGE = pygame.image.load(os.path.join('assets', 'enemy_turn.png')).convert()
+ENEMY_PHASE_IMAGE.set_colorkey(TRANSPARENT)
+
+ENEMY_PHASE_IMAGE_SHADOW = pygame.image.load(os.path.join('assets', 'enemy_turn_shadow.png')).convert()
+ENEMY_PHASE_IMAGE_SHADOW.set_colorkey(TRANSPARENT)
+
 MAP_IMAGES = dict()
 
 #pygame.mixer.music.load(os.path.join('assets', 'Spy.mp3'))
@@ -58,6 +70,12 @@ VICTORY_SHADOW_SURFACE = pygame.transform.scale(VICTORY_IMAGE_SHADOW, (150 * 4, 
 
 DEFEAT_SURFACE = pygame.transform.scale(DEFEAT_IMAGE, (150 * 4, 83 * 4))
 DEFEAT_SHADOW_SURFACE = pygame.transform.scale(DEFEAT_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
+PLAYER_PHASE_SURFACE = pygame.transform.scale(PLAYER_PHASE_IMAGE, (150 * 4, 83 * 4))
+PLAYER_PHASE_SHADOW_SURFACE = pygame.transform.scale(PLAYER_PHASE_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
+ENEMY_PHASE_SURFACE = pygame.transform.scale(ENEMY_PHASE_IMAGE, (150 * 4, 83 * 4))
+ENEMY_PHASE_SHADOW_SURFACE = pygame.transform.scale(ENEMY_PHASE_IMAGE_SHADOW, (150 * 4, 83 * 4))
 
 TEXT_FONT = pygame.font.SysFont('lucidaconsole', 40)
 DESC_FONT = pygame.font.SysFont('lucidaconsole', 20)
@@ -286,7 +304,8 @@ def mouse_xy_to_map_xy(mouse_pos):
 
 
 def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential_cells_to_move, selecting_sprite_action_mode,
-                action_menu_sprites_added, sprite_targeting_mode, potential_cells_to_target, victory, defeat):
+                action_menu_sprites_added, sprite_targeting_mode, potential_cells_to_target, victory, defeat,
+                show_player_phase_indicator, show_enemy_phase_indicator, description_to_display):
     pygame.draw.rect(ZOOMED_MAP, GRAY, pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT))
 
     bottom_left_rect = pygame.Rect(0, HEIGHT - 200, 200, 200)
@@ -334,7 +353,7 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
         for action_name in sprite_to_display.actions.keys():
             drawText(action_menu_surface, action_name, WHITE, rect, CELL_FONT, True)
             if not action_menu_sprites_added:
-                add_sprite_to_group(MenuItem(sprite_rect, action_name), menu_sprites)
+                add_sprite_to_group(MenuItem(sprite_rect, action_name, sprite_to_display.actions[action_name][1]), menu_sprites)
             rect = pygame.Rect(2, rect.y + CELL_FONT.get_height() + 2, widest_action, CELL_FONT.get_height())
             sprite_rect = pygame.Rect(sprite_to_display.rect.x + sprite_to_display.rect.width + 5, sprite_rect.y + CELL_FONT.get_height(), widest_action, CELL_FONT.get_height())
         ZOOMED_MAP.blit(action_menu_surface, (sprite_to_display.rect.x + sprite_to_display.rect.width + 5, sprite_to_display.rect.y + 5))
@@ -353,9 +372,11 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
     pygame.draw.rect(WIN, BLACK, bottom_right_rect)
     drawText(WIN, "Victory Condition: Begin your turn with at least one allied unit and no enemy units in all yellow areas.", WHITE, bottom_right_rect, BABY_FONT, True)
     pygame.draw.rect(WIN, BLACK, middle_rect)
+    if description_to_display is not None:
+        drawText(WIN, description_to_display, WHITE, middle_rect, TEXT_FONT, True)
     if sprite_to_display is None:
         pass
-    else:
+    elif description_to_display is None:
         drawText(WIN, sprite_to_display.unitType.name, WHITE, middle_rect, TEXT_FONT, True)
         next_rect = pygame.Rect(middle_rect.x, middle_rect.y + TEXT_FONT.get_height() + 3, middle_rect.width, middle_rect.height)
         drawText(WIN, "HP: " + str(sprite_to_display.hp) + "/" + str(sprite_to_display.max_hp), WHITE, next_rect, TEXT_FONT, True)
@@ -378,6 +399,20 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
                   HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2 + 10))
         WIN.blit(DEFEAT_SURFACE, (WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2, HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2))
         drawText(WIN, "Use the left or right mouse button to restart!", WHITE, pygame.Rect(WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2, HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2 + 270, 500, 500), TEXT_FONT, True)
+
+    if show_player_phase_indicator:
+        WIN.blit(PLAYER_PHASE_SHADOW_SURFACE,
+                 (WIDTH // 2 - PLAYER_PHASE_SHADOW_SURFACE.get_width() // 2 + 10,
+                  HEIGHT // 2 - PLAYER_PHASE_SHADOW_SURFACE.get_height() // 2 + 10))
+        WIN.blit(PLAYER_PHASE_SURFACE,
+                 (WIDTH // 2 - PLAYER_PHASE_SURFACE.get_width() // 2, HEIGHT // 2 - PLAYER_PHASE_SURFACE.get_height() // 2))
+
+    if show_enemy_phase_indicator:
+        WIN.blit(ENEMY_PHASE_SHADOW_SURFACE,
+                 (WIDTH // 2 - ENEMY_PHASE_SHADOW_SURFACE.get_width() // 2 + 10,
+                  HEIGHT // 2 - ENEMY_PHASE_SHADOW_SURFACE.get_height() // 2 + 10))
+        WIN.blit(ENEMY_PHASE_SURFACE,
+                 (WIDTH // 2 - ENEMY_PHASE_SURFACE.get_width() // 2, HEIGHT // 2 - ENEMY_PHASE_SURFACE.get_height() // 2))
 
     pygame.display.update()
 
@@ -453,7 +488,8 @@ def game():
 
     player_turn = True
     start_of_player_turn = True
-    start_of_enemy_turn = False
+    show_player_phase_start = True
+    show_enemy_phase_start = False
     defeated = False
     victory = False
 
@@ -476,6 +512,7 @@ def game():
     add_sprite_to_group(goop_soldier, enemy_units)
     sprite_to_display = None
     sprite_moving_current_coordinates = None
+    description_to_display = None
 
     while run:
         clock.tick(FPS)
@@ -487,9 +524,10 @@ def game():
 
         if start_of_player_turn:
             # add all allied units into the active group
-
+            show_player_phase_start = True
             if victory_condition_1(allied_units.sprites(), enemy_units.sprites()):
                 victory = True
+                show_player_phase_start = False
                 print("MISSION COMPLETE BABY")
                 # We have won.
                 # TODO: play fanfare sound
@@ -498,6 +536,7 @@ def game():
                 # TODO: play sad fanfare sound
                 print("MISSION FAILED, WE'LL GET EM NEXT TIME")
                 defeated = True
+                show_player_phase_start = False
             active_allied_units.add(allied_units)
             start_of_player_turn = False
             player_turn = True
@@ -506,10 +545,13 @@ def game():
         if len(active_allied_units.sprites()) < 1 and player_turn:
             player_turn = False
             active_hostile_units.add(enemy_units)
-            # TODO: show an indicator that the enemy turn has started
+            show_enemy_phase_start = True
+            enemy_move_start_time = pygame.time.get_ticks()
 
+        enemy_turn_length = 1000  # ms
         # move an enemy unit every 2 seconds
-        if not defeated and not player_turn and len(active_hostile_units.sprites()) > 0 and enemy_move_start_time < pygame.time.get_ticks() - 2000:
+        if not defeated and not player_turn and len(active_hostile_units.sprites()) > 0 and enemy_move_start_time < pygame.time.get_ticks() - enemy_turn_length:
+            show_enemy_phase_start = False
             enemy_move_start_time = pygame.time.get_ticks()
             sprite = active_hostile_units.sprites()[0]
 
@@ -525,13 +567,15 @@ def game():
             for square in adjacent_squares:
                 if square in legal_moves:
                     sprite.move_to_grid_coordinates(square)
-                    if sprite.actions["Attack"](targeted_unit):
+                    if sprite.actions["Attack"][0](targeted_unit):
                         # attack success
                         # TODO: play a sound effect
                         break
                     else:
-                        sprite.actions["Wait"](sprite)
+                        sprite.actions["Wait"][0](sprite)
                         # TODO: play a sound effect
+                        # don't wait if all this unit did was Wait
+                        enemy_move_start_time += enemy_turn_length
                         break
             active_hostile_units.remove(sprite)
 
@@ -542,7 +586,18 @@ def game():
                 pygame.quit()
                 break
             if event.type == pygame.MOUSEMOTION:
-                pass
+                # if we are hovering over a menu item, display the description in the bottom section
+                mouse_sprite = MouseSprite(mouse_xy_to_map_xy(pygame.mouse.get_pos()))
+                mouse_colliding = pygame.sprite.spritecollide(mouse_sprite, menu_sprites, False)
+                if len(mouse_colliding) > 1:
+                    # lol what
+                    description_to_display = None
+                elif len(mouse_colliding) == 1:
+                    # move into target mode
+                    description_to_display = mouse_colliding[0].description
+                else:
+                    # no menu item was selected
+                    description_to_display = None
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # these are the values of event.button depending on which is pressed:
                 # 1 - left click
@@ -553,6 +608,8 @@ def game():
                 # see https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame
                 if event.button == 1:
                     # left click
+                    if show_player_phase_start:
+                        show_player_phase_start = False
                     if victory or defeated:
                         restart = True
                         run = False
@@ -578,6 +635,7 @@ def game():
                         if cursor_grid_coordinates in potential_cells_to_move:
                             # they can move here, move them to the next phase
                             action_menu_sprites_added = False
+                            menu_sprites.empty()
                             sprite_moving_current_coordinates = sprite_to_display.get_grid_coordinates()
                             sprite_to_display.move_to_grid_coordinates(cursor_grid_coordinates)
                             moving_sprite_mode = False
@@ -609,7 +667,7 @@ def game():
                         mouse_colliding = pygame.sprite.spritecollide(mouse_sprite, all_sprites, False)
                         if cursor_grid_coordinates in potential_cells_to_target and len(mouse_colliding) == 1:
                             # attempt to target the selected sprite
-                            result = sprite_to_display.actions[selected_action_name](mouse_colliding[0])
+                            result = sprite_to_display.actions[selected_action_name][0](mouse_colliding[0])
                             if result:
                                 # the target was successful, move on
                                 # TODO: play a sound effect based on the action performed
@@ -643,9 +701,11 @@ def game():
                         selecting_sprite_action_mode = False
                         moving_sprite_mode = True
                     elif sprite_targeting_mode:
+                        cursor_grid_coordinates = sprite_to_display.get_grid_coordinates()
                         potential_cells_to_target.clear()
                         sprite_targeting_mode = False
                         action_menu_sprites_added = False
+                        menu_sprites.empty()
                         selecting_sprite_action_mode = True
                 # as per the jam restrictions, these are the only allowed buttons
 
@@ -659,7 +719,8 @@ def game():
             continue
         draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string, sprite_to_display, moving_sprite_mode,
                     potential_cells_to_move, selecting_sprite_action_mode, action_menu_sprites_added,
-                    sprite_targeting_mode, potential_cells_to_target, victory, defeated)
+                    sprite_targeting_mode, potential_cells_to_target, victory, defeated, show_player_phase_start,
+                    show_enemy_phase_start, description_to_display)
         if not action_menu_sprites_added:
             action_menu_sprites_added = True
 

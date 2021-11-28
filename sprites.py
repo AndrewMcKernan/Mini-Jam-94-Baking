@@ -8,11 +8,12 @@ class UnitType(Enum):
     GOOP = 2
 
 class MenuItem(pygame.sprite.Sprite):
-    def __init__(self, rect, name):
+    def __init__(self, rect, name, description):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((1, 1))
         self.rect = rect
         self.name = name
+        self.description = description
 
     def __str__(self):
         return self.name + " " + str(self.rect.x) + "," + str(self.rect.y) + " - " + str(self.rect.width) + ',' + str(self.rect.height)
@@ -53,7 +54,7 @@ class Unit(pygame.sprite.Sprite):
             raise TypeError("Unit Type must be set to a UnitType enum.")
         self.unitType = unit_type
         self.actions = dict()
-        self.actions['Wait'] = self.wait
+        self.actions['Wait'] = (self.wait, "The unit ends its turn, performing no action.")
 
     def get_grid_coordinates(self):
         return self.rect.x // TILE_WIDTH, self.rect.y // TILE_HEIGHT
@@ -87,7 +88,7 @@ class EggSoldier(Unit):
         self.max_hp = 5
         self.attack_value = 5
         self.movement = 5
-        self.actions['Attack'] = self.attack
+        self.actions['Attack'] = (self.attack, "The Egg targets an adjacent enemy, dealing " + str(self.attack_value) + " damage.")
 
 
 class GoopSoldier(Unit):
@@ -118,6 +119,6 @@ class GoopSoldier(Unit):
         self.max_hp = 12
         self.attack_value = 3
         self.movement = 2
-        self.actions['Attack'] = self.attack
+        self.actions['Attack'] = (self.attack, "The Kitchen Goop targets an adjacent enemy, dealing " + str(self.attack_value) + "damage.")
 
 
