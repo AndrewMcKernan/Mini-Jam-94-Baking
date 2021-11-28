@@ -17,6 +17,13 @@ class MenuItem(pygame.sprite.Sprite):
     def __str__(self):
         return self.name + " " + str(self.rect.x) + "," + str(self.rect.y) + " - " + str(self.rect.width) + ',' + str(self.rect.height)
 
+class Terrain(pygame.sprite.Sprite):
+    def __init__(self, image, width, height, start_x=0, start_y=0):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.transform.scale(image, (width, height))
+        self.rect = self.image.get_rect()
+        self.rect.x = start_x
+        self.rect.y = start_y
 
 
 class MouseSprite(pygame.sprite.Sprite):

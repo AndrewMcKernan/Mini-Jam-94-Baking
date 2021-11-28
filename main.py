@@ -27,6 +27,9 @@ EGG_IMAGE.set_colorkey(TRANSPARENT)
 GOOP_IMAGE = pygame.image.load(os.path.join('assets', 'goop.png')).convert()
 GOOP_IMAGE.set_colorkey(TRANSPARENT)
 
+FORK_IMAGE = pygame.image.load(os.path.join('assets', 'fork.png')).convert()
+FORK_IMAGE.set_colorkey(TRANSPARENT)
+
 MOUSE_IMAGE = pygame.image.load(os.path.join('assets', 'mouse.png')).convert()
 MOUSE_IMAGE.set_colorkey(TRANSPARENT)
 
@@ -43,6 +46,7 @@ DESC_FONT = pygame.font.SysFont('lucidaconsole', 20)
 CELL_FONT = pygame.font.SysFont('lucidaconsole', 25)
 
 all_sprites = pygame.sprite.Group()
+terrain_sprites = pygame.sprite.Group()
 menu_sprites = pygame.sprite.Group()
 
 
@@ -267,7 +271,8 @@ def move_camera(mouse_pos):
 def game():
     pygame.event.set_grab(True)
     restart = False
-    all_sprites.empty()
+    for sprite in all_sprites.sprites():
+        sprite.kill()
     clock = pygame.time.Clock()
     title_mode = True
     run = True
@@ -302,9 +307,12 @@ def game():
 
     starting_xy = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2))
     starting_xy_goop = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 2))
+    starting_xy_fork = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 1))
 
     egg_soldier = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, starting_xy[0], starting_xy[1])
     goop_soldier = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, starting_xy_goop[0], starting_xy_goop[1])
+    fork_terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, starting_xy_fork[0], starting_xy_fork[1])
+    add_sprite_to_group(fork_terrain, terrain_sprites)
 
     allied_units = pygame.sprite.Group()
     active_allied_units = pygame.sprite.Group()
@@ -334,7 +342,6 @@ def game():
             # TODO: show an indicator that the player turn has started
 
         if len(active_allied_units.sprites()) < 1 and player_turn:
-            print("Enemy turn begins")
             player_turn = False
             active_hostile_units.add(enemy_units)
             # TODO: show an indicator that the enemy turn has started

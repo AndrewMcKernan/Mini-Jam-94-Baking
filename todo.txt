@@ -2,11 +2,11 @@
 2. Create an information display area on the bottom of the screen - done
 3. Display unit information on the bottom when mouse click - done
 4. Add camera movement to accommodate for smaller screen size - done
-5. Allow units to move (based on an internal movement speed value) (potentially add obstacle logic here, otherwise step 8)
+5. Allow units to move (based on an internal movement speed value) (potentially add obstacle logic here, otherwise step 8) - DONE
     5.1 To move, when a unit is selected, the area around them that they can move should light up blue. Clicking again
      should move them (not commited yet). Once moved, a menu should pop up beside them with options as to what actions
-     you can take, likely attacking, healing, etc. Right clicking should cancel your previous action. - done, but can't take actions yet
-    5.2 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved - NOT DONE
+     you can take, likely attacking, healing, etc. Right clicking should cancel your previous action. - DONE
+    5.2 Ensure allied units are "activated" when moved and cannot be moved again until all other allied units are moved - DONE
 6. Add enemy units - DONE
 7. Allow allied units to attack enemies - DONE
     7.1 Decide between a miss chance (like FE and SW Minis), or a damage roll (like Root)
@@ -17,10 +17,11 @@
 11. Add objectives to game to allow victory (place x units in y location)
     11.1 Add multiple objectives (several locations)
     11.2 Display victory when achieved and restart game
-12. Design map, come up with sprites, place enemies, allies, and terrain obstacles well
-13. Add sprite portraits in display portion of screen, if not done already
-14. Add special abilities to allied units (healing for sugar, stealth for chocolate, etc)
-15. Balance game for reasonable difficulty
-16. Add story explanation
-17. Add animations to combat
-18. Export game (do this early if you run out of time, haha)
+12. Add descriptions of abilities and the objective in the bottom portion of the screen.
+13. Design map, come up with sprites, place enemies, allies, and terrain obstacles well
+14. Add sprite portraits in display portion of screen, if not done already
+15. Add special abilities to allied units (healing for sugar, stealth for chocolate, etc)
+16. Balance game for reasonable difficulty
+17. Add story explanation
+18. Add animations to combat
+19. Export game (do this early if you run out of time, haha)
