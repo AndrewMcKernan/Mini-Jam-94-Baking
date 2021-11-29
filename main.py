@@ -15,7 +15,7 @@ pygame.display.set_caption("Mini Jam 94: Baking")
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 ZOOMED_MAP = pygame.surface.Surface((ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT))
-camera = pygame.Rect((ZOOMED_MAP_WIDTH // 2 - WIDTH // 2, ZOOMED_MAP_HEIGHT // 2 - HEIGHT // 2), (WIDTH, HEIGHT))
+camera = pygame.Rect((ZOOMED_MAP_WIDTH // 2 - WIDTH // 2 - 200, ZOOMED_MAP_HEIGHT // 2 - HEIGHT // 2 + 500), (WIDTH, HEIGHT))
 
 BACKGROUND = pygame.Rect(0, 0, WIDTH, HEIGHT)
 ZOOMED_BACKGROUND = pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT)
@@ -24,8 +24,20 @@ ZOOMED_BACKGROUND = pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT)
 EGG_IMAGE = pygame.image.load(os.path.join('assets', 'egg.png')).convert()
 EGG_IMAGE.set_colorkey(TRANSPARENT)
 
+SUGAR_IMAGE = pygame.image.load(os.path.join('assets', 'sugar.png')).convert()
+SUGAR_IMAGE.set_colorkey(TRANSPARENT)
+
+OIL_IMAGE = pygame.image.load(os.path.join('assets', 'oil.png')).convert()
+OIL_IMAGE.set_colorkey(TRANSPARENT)
+
 GOOP_IMAGE = pygame.image.load(os.path.join('assets', 'goop.png')).convert()
 GOOP_IMAGE.set_colorkey(TRANSPARENT)
+
+APPLE_IMAGE = pygame.image.load(os.path.join('assets', 'bad_apple.png')).convert()
+APPLE_IMAGE.set_colorkey(TRANSPARENT)
+
+FLY_IMAGE = pygame.image.load(os.path.join('assets', 'fly.png')).convert()
+FLY_IMAGE.set_colorkey(TRANSPARENT)
 
 FORK_IMAGE = pygame.image.load(os.path.join('assets', 'fork.png')).convert()
 FORK_IMAGE.set_colorkey(TRANSPARENT)
@@ -63,6 +75,9 @@ WATER_TECTURE_IMAGE.set_colorkey(TRANSPARENT)
 WOOD_TEXTURE_IMAGE = pygame.image.load(os.path.join('assets', 'wood-16x16.png')).convert()
 WOOD_TEXTURE_IMAGE.set_colorkey(TRANSPARENT)
 
+BOWL_IMAGE = pygame.image.load(os.path.join('assets', 'bowl_200x139.png')).convert()
+BOWL_IMAGE.set_colorkey(TRANSPARENT)
+
 MAP_IMAGES = dict()
 
 #pygame.mixer.music.load(os.path.join('assets', 'Spy.mp3'))
@@ -85,6 +100,8 @@ ENEMY_PHASE_SHADOW_SURFACE = pygame.transform.scale(ENEMY_PHASE_IMAGE_SHADOW, (1
 
 WOOD_SURFACE = pygame.transform.scale(WOOD_TEXTURE_IMAGE, (80, 80))
 
+BOWL_SURFACE = pygame.transform.scale(BOWL_IMAGE, (TILE_WIDTH * 3, TILE_HEIGHT * 3))
+
 TEXT_FONT = pygame.font.SysFont('lucidaconsole', 40)
 DESC_FONT = pygame.font.SysFont('lucidaconsole', 20)
 CELL_FONT = pygame.font.SysFont('lucidaconsole', 25)
@@ -95,11 +112,32 @@ terrain_sprites = pygame.sprite.Group()
 menu_sprites = pygame.sprite.Group()
 
 victory_area_1 = {
-        (40,20),
-        (41,20),
-        (41,21),
-        (40,21)
+        (5, 3),
+        (5, 4),
+        (5, 5),
+        (6, 3),
+        (6, 4),
+        (6, 5),
+        (7, 3),
+        (7, 4),
+        (7, 5),
 }
+
+victory_area_1_base = (5, 3)
+
+victory_area_2 = {
+        (14, 3),
+        (14, 4),
+        (14, 5),
+        (15, 3),
+        (15, 4),
+        (15, 5),
+        (16, 3),
+        (16, 4),
+        (16, 5),
+}
+
+victory_area_2_base = (14, 3)
 
 
 def determine_legal_target_faster(attack_range, cell):
@@ -313,34 +351,38 @@ def mouse_xy_to_map_xy(mouse_pos):
 
 def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential_cells_to_move, selecting_sprite_action_mode,
                 action_menu_sprites_added, sprite_targeting_mode, potential_cells_to_target, victory, defeat,
-                show_player_phase_indicator, show_enemy_phase_indicator, description_to_display):
+                show_player_phase_indicator, show_enemy_phase_indicator, description_to_display, active_allied_sprites,
+                all_allied_sprites):
     pygame.draw.rect(ZOOMED_MAP, GRAY, pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT))
 
     bottom_left_rect = pygame.Rect(0, HEIGHT - 200, 200, 200)
     middle_rect = pygame.Rect(200, HEIGHT - 150, WIDTH - 400, 150)
     bottom_right_rect = pygame.Rect(WIDTH - 200, HEIGHT - 200, 200, 200)
 
-    # x = 0
-    # while x < ZOOMED_MAP_WIDTH:
-    #     pygame.draw.line(ZOOMED_MAP, RED, (x, 0), (x, ZOOMED_MAP_HEIGHT))
-    #     x += TILE_WIDTH
-    # y = 0
-    # while y < ZOOMED_MAP_HEIGHT:
-    #     pygame.draw.line(ZOOMED_MAP, RED, (0, y), (ZOOMED_MAP_WIDTH, y))
-    #     y += TILE_HEIGHT
-
     for i in range(GRID_WIDTH):
         for n in range(GRID_HEIGHT):
             ZOOMED_MAP.blit(WOOD_SURFACE, coordinates_to_xy((i, n)))
 
+    ZOOMED_MAP.blit(BOWL_SURFACE, coordinates_to_xy(victory_area_1_base))
+    surface = pygame.Surface((TILE_WIDTH * 3, TILE_HEIGHT * 3))
+    surface.set_alpha(90)
+    surface.fill(YELLOW)
+    ZOOMED_MAP.blit(surface, coordinates_to_xy(victory_area_1_base))
+
+    ZOOMED_MAP.blit(BOWL_SURFACE, coordinates_to_xy(victory_area_2_base))
+    surface = pygame.Surface((TILE_WIDTH * 3, TILE_HEIGHT * 3))
+    surface.set_alpha(90)
+    surface.fill(YELLOW)
+    ZOOMED_MAP.blit(surface, coordinates_to_xy(victory_area_2_base))
 
     all_sprites.draw(ZOOMED_MAP)
 
-    for cell in victory_area_1:
-        surface = pygame.Surface((TILE_WIDTH, TILE_HEIGHT))
-        surface.set_alpha(64)
-        surface.fill(YELLOW)
-        ZOOMED_MAP.blit(surface, coordinates_to_xy(cell))
+    for sprite in all_allied_sprites.sprites():
+        if sprite not in active_allied_sprites:
+            surface = pygame.Surface((TILE_WIDTH, TILE_HEIGHT))
+            surface.set_alpha(200)
+            surface.fill(GRAY)
+            ZOOMED_MAP.blit(surface, coordinates_to_xy(sprite.get_grid_coordinates()))
 
     if moving_sprite_mode:
         for cell in potential_cells_to_move:
@@ -460,14 +502,23 @@ def move_camera(mouse_pos):
             camera.y = ZOOMED_MAP_HEIGHT - HEIGHT
 
 
-def victory_condition_1(allied_sprites, enemy_sprites):
+def victory_condition(allied_sprites, enemy_sprites):
 
     for enemy in enemy_sprites:
         if enemy.get_grid_coordinates() in victory_area_1:
             return False
+    for enemy in enemy_sprites:
+        if enemy.get_grid_coordinates() in victory_area_2:
+            return False
+    first_area_secure = False
     for ally in allied_sprites:
         if ally.get_grid_coordinates() in victory_area_1:
-            return True
+            first_area_secure = True
+    if first_area_secure:
+        for ally in allied_sprites:
+            if ally.get_grid_coordinates() in victory_area_2:
+                return True
+    return False
 
 
 def generate_terrain():
@@ -721,6 +772,126 @@ def generate_terrain():
             add_sprite_to_group(terrain, terrain_sprites)
 
 
+def place_enemies(enemy_units):
+    xy = coordinates_to_xy((1, 1))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((5, 3))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((7, 3))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((7, 2))
+    enemy = FlySoldier(FLY_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.FLY, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((2, 7))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((3, 9))
+    enemy = FlySoldier(FLY_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.FLY, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((4, 10))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((5, 9))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((0, 14))
+    enemy = FlySoldier(FLY_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.FLY, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((0, 13))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((14, 3))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((16, 2))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((20, 1))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((24, 1))
+    enemy = FlySoldier(FLY_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.FLY, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((16, 9))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((17, 10))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((20, 6))
+    enemy = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((21, 13))
+    enemy = FlySoldier(FLY_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.FLY, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+    xy = coordinates_to_xy((21, 14))
+    enemy = AppleSoldier(APPLE_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.BAD_APPLE, xy[0], xy[1])
+    add_sprite_to_group(enemy, enemy_units)
+
+
+def place_allies(allied_units):
+    xy = coordinates_to_xy((9, 18))
+    ally = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((10, 18))
+    ally = SugarSoldier(SUGAR_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.SUGAR, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((11, 18))
+    ally = SugarSoldier(SUGAR_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.SUGAR, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((12, 18))
+    ally = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((9, 17))
+    ally = OilSoldier(OIL_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.OIL, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((10, 17))
+    ally = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((11, 17))
+    ally = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((12, 17))
+    ally = OilSoldier(OIL_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.OIL, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((10, 16))
+    ally = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+    xy = coordinates_to_xy((11, 16))
+    ally = OilSoldier(OIL_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.OIL, xy[0], xy[1])
+    add_sprite_to_group(ally, allied_units)
+
+
 def game():
     pygame.event.set_grab(True)
     restart = False
@@ -759,25 +930,17 @@ def game():
 
     enemy_move_start_time = pygame.time.get_ticks()
 
-    starting_xy = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 + 3))
-    starting_xy_goop = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 2))
-    starting_xy_fork = coordinates_to_xy((GRID_WIDTH // 2, GRID_HEIGHT // 2 - 1))
-
-    egg_soldier = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, starting_xy[0], starting_xy[1])
-    egg_soldier2 = EggSoldier(EGG_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.EGG, starting_xy[0] + 80, starting_xy[1])
-    #goop_soldier = GoopSoldier(GOOP_IMAGE, TILE_WIDTH, TILE_HEIGHT, UnitType.GOOP, starting_xy_goop[0], starting_xy_goop[1])
-    #fork_terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, starting_xy_fork[0], starting_xy_fork[1])
-    #add_sprite_to_group(fork_terrain, terrain_sprites)
-
     generate_terrain()
 
     allied_units = pygame.sprite.Group()
     active_allied_units = pygame.sprite.Group()
+    place_allies(allied_units)
+
     active_hostile_units = pygame.sprite.Group()
     enemy_units = pygame.sprite.Group()
-    add_sprite_to_group(egg_soldier, allied_units)
-    add_sprite_to_group(egg_soldier2, allied_units)
-    #add_sprite_to_group(goop_soldier, enemy_units)
+    place_enemies(enemy_units)
+
+
     sprite_to_display = None
     sprite_moving_current_coordinates = None
     description_to_display = None
@@ -793,7 +956,7 @@ def game():
         if start_of_player_turn:
             # add all allied units into the active group
             show_player_phase_start = True
-            if victory_condition_1(allied_units.sprites(), enemy_units.sprites()):
+            if victory_condition(allied_units.sprites(), enemy_units.sprites()):
                 victory = True
                 show_player_phase_start = False
                 print("MISSION COMPLETE BABY")
@@ -835,19 +998,26 @@ def game():
                                 (targeted_unit_coordinates[0] - 1, targeted_unit_coordinates[1]),
                                 (targeted_unit_coordinates[0], targeted_unit_coordinates[1] + 1),
                                 (targeted_unit_coordinates[0], targeted_unit_coordinates[1] - 1)}
+            moved = False
             for square in adjacent_squares:
                 if square in legal_moves:
                     sprite.move_to_grid_coordinates(square)
                     if sprite.actions["Attack"][0](targeted_unit):
                         # attack success
                         # TODO: play a sound effect
+                        moved = True
                         break
                     else:
                         sprite.actions["Wait"][0](sprite)
                         # TODO: play a sound effect
                         # don't wait if all this unit did was Wait
-                        enemy_move_start_time += enemy_turn_length
+                        moved = True
                         break
+            if not moved:
+                sprite.actions["Wait"][0](sprite)
+                # TODO: play a sound effect
+                # don't wait if all this unit did was Wait
+                enemy_move_start_time -= enemy_turn_length
             active_hostile_units.remove(sprite)
 
         for event in pygame.event.get():
@@ -889,9 +1059,14 @@ def game():
                         mouse_sprite = MouseSprite(mouse_xy_to_map_xy(pygame.mouse.get_pos()))
                         mouse_colliding = pygame.sprite.spritecollide(mouse_sprite, all_sprites, False)
                         if len(mouse_colliding) > 1:
-                            # lol what
-                            pass
-                        elif len(mouse_colliding) == 1 and not isinstance(mouse_colliding[0], Terrain):
+                            # lol what, I guess pick the first allied unit in here?
+                            for sprite in mouse_colliding:
+                                if isinstance(sprite, Unit) and not sprite.hostile:
+                                    potential_cells_to_move = determine_legal_movement_faster(
+                                        sprite_to_display.movement, sprite_to_display.get_grid_coordinates())
+                                    camera_mode = False
+                                    moving_sprite_mode = True
+                        elif len(mouse_colliding) == 1 and not isinstance(mouse_colliding[0], Terrain) and not isinstance(mouse_colliding[0], MenuItem):
                             # display the unit information on the bottom screen
                             sprite_to_display = mouse_colliding[0]
                             if not sprite_to_display.hostile and active_allied_units.has(sprite_to_display):
@@ -906,7 +1081,8 @@ def game():
                         if cursor_grid_coordinates in potential_cells_to_move:
                             # they can move here, move them to the next phase
                             action_menu_sprites_added = False
-                            menu_sprites.empty()
+                            for sprite in menu_sprites.sprites():
+                                sprite.kill()
                             sprite_moving_current_coordinates = sprite_to_display.get_grid_coordinates()
                             sprite_to_display.move_to_grid_coordinates(cursor_grid_coordinates)
                             moving_sprite_mode = False
@@ -919,7 +1095,7 @@ def game():
                         mouse_colliding = pygame.sprite.spritecollide(mouse_sprite, menu_sprites, False)
                         if len(mouse_colliding) > 1:
                             # lol what
-                            pass
+                            raise TypeError("This should not have happened, unless my logic is flawed")
                         elif len(mouse_colliding) == 1:
                             # move into target mode
                             selecting_sprite_action_mode = False
@@ -950,6 +1126,9 @@ def game():
                                 # the target was not successful, do not move on
                                 # TODO: play a sound effect indicating an improper targeting
                                 pass
+                        elif len(mouse_colliding) > 1:
+                            print(mouse_colliding)
+                            raise TypeError("Multiple sprites were targeted - how???")
                         else:
                             # TODO: play a sound effect indicating an improper targeting
                             pass
@@ -977,7 +1156,8 @@ def game():
                         potential_cells_to_target.clear()
                         sprite_targeting_mode = False
                         action_menu_sprites_added = False
-                        menu_sprites.empty()
+                        for sprite in menu_sprites.sprites():
+                            sprite.kill()
                         selecting_sprite_action_mode = True
                 # as per the jam restrictions, these are the only allowed buttons
 
@@ -992,7 +1172,7 @@ def game():
         draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string, sprite_to_display, moving_sprite_mode,
                     potential_cells_to_move, selecting_sprite_action_mode, action_menu_sprites_added,
                     sprite_targeting_mode, potential_cells_to_target, victory, defeated, show_player_phase_start,
-                    show_enemy_phase_start, description_to_display)
+                    show_enemy_phase_start, description_to_display, active_allied_units, allied_units)
         if not action_menu_sprites_added:
             action_menu_sprites_added = True
 

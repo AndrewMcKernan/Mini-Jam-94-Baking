@@ -18,10 +18,9 @@
     11.1 Add multiple objectives (several locations) - I think it can be done, haven't tested this specifically
     11.2 Display victory when achieved and restart game - DONE
 12. Add descriptions of abilities and the objective in the bottom portion of the screen. - DONE
-13. Design map, come up with sprites, place enemies, allies, and terrain obstacles well
-14. Add sprite portraits in display portion of screen, if not done already
-15. Add special abilities to allied units (healing for sugar, stealth for chocolate, etc)
-16. Balance game for reasonable difficulty
-17. Add story explanation
-18. Add animations to combat
-19. Export game (do this early if you run out of time, haha)
+13. Design map, come up with sprites, place enemies, allies, and terrain obstacles well - DONE
+14. Add unit diversity, as described in Google Doc
+15. Balance game for reasonable difficulty
+16. Add story explanation
+17. Add animations to combat
+18. Export game (do this early if you run out of time, haha)
