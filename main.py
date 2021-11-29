@@ -21,6 +21,8 @@ camera = pygame.Rect((ZOOMED_MAP_WIDTH // 2 - WIDTH // 2 - 200, ZOOMED_MAP_HEIGH
 BACKGROUND = pygame.Rect(0, 0, WIDTH, HEIGHT)
 ZOOMED_BACKGROUND = pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT)
 
+EXPLANATION_IMAGE = pygame.image.load(os.path.join('assets', 'explanation.png')).convert()
+EXPLANATION_IMAGE.set_colorkey(TRANSPARENT)
 
 EGG_IMAGE = pygame.image.load(os.path.join('assets', 'egg.png')).convert()
 EGG_IMAGE.set_colorkey(TRANSPARENT)
@@ -96,6 +98,11 @@ MOUSE_SURFACE = pygame.transform.scale(MOUSE_IMAGE, (200, 200))
 
 VICTORY_SURFACE = pygame.transform.scale(VICTORY_IMAGE, (150 * 4, 83 * 4))
 VICTORY_SHADOW_SURFACE = pygame.transform.scale(VICTORY_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
+VICTORY_SURFACE = pygame.transform.scale(VICTORY_IMAGE, (150 * 4, 83 * 4))
+VICTORY_SHADOW_SURFACE = pygame.transform.scale(VICTORY_IMAGE_SHADOW, (150 * 4, 83 * 4))
+
+EXPLANATION_SURFACE = pygame.transform.scale(EXPLANATION_IMAGE, (614, 700))
 
 DEFEAT_SURFACE = pygame.transform.scale(DEFEAT_IMAGE, (150 * 4, 83 * 4))
 DEFEAT_SHADOW_SURFACE = pygame.transform.scale(DEFEAT_IMAGE_SHADOW, (150 * 4, 83 * 4))
@@ -360,7 +367,7 @@ def mouse_xy_to_map_xy(mouse_pos):
 def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential_cells_to_move, selecting_sprite_action_mode,
                 action_menu_sprites_added, sprite_targeting_mode, potential_cells_to_target, victory, defeat,
                 show_player_phase_indicator, show_enemy_phase_indicator, description_to_display, active_allied_sprites,
-                all_allied_sprites):
+                all_allied_sprites, explanation):
     pygame.draw.rect(ZOOMED_MAP, GRAY, pygame.Rect(0, 0, ZOOMED_MAP_WIDTH, ZOOMED_MAP_HEIGHT))
 
     bottom_left_rect = pygame.Rect(0, HEIGHT - 200, 200, 200)
@@ -449,7 +456,10 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
 
     #drawText(WIN, fps, WHITE, pygame.Rect(5, 5, 300, 300), TEXT_FONT, True)
 
-    if victory:
+    if explanation:
+        WIN.blit(EXPLANATION_SURFACE,
+                 (WIDTH // 2 - EXPLANATION_SURFACE.get_width() // 2, HEIGHT // 2 - EXPLANATION_SURFACE.get_height() // 2))
+    elif victory:
         WIN.blit(VICTORY_SHADOW_SURFACE,
                  (WIDTH // 2 - VICTORY_SURFACE.get_width() // 2 + 10,
                   HEIGHT // 2 - VICTORY_SURFACE.get_height() // 2 + 10))
@@ -909,6 +919,7 @@ def game():
     pygame.mixer.music.set_volume(0.1)
     pygame.mixer.music.play(-1)
     pygame.event.set_grab(True)
+    explain = True
     restart = False
     for sprite in all_sprites.sprites():
         sprite.kill()
@@ -1068,6 +1079,7 @@ def game():
                 # 5 - scroll down
                 # see https://stackoverflow.com/questions/34287938/how-to-distinguish-left-click-right-click-mouse-clicks-in-pygame
                 if event.button == 1:
+                    explain = False
                     # left click
                     if show_player_phase_start:
                         show_player_phase_start = False
@@ -1156,8 +1168,9 @@ def game():
                             sound.play()
                             pass
                 if event.button == 3:
+                    explain = False
                     # right click
-                    if victory:
+                    if victory or defeated:
                         restart = True
                         run = False
                     if camera_mode:
@@ -1195,7 +1208,7 @@ def game():
         draw_window(coordinates_to_xy(cursor_grid_coordinates), frames_string, sprite_to_display, moving_sprite_mode,
                     potential_cells_to_move, selecting_sprite_action_mode, action_menu_sprites_added,
                     sprite_targeting_mode, potential_cells_to_target, victory, defeated, show_player_phase_start,
-                    show_enemy_phase_start, description_to_display, active_allied_units, allied_units)
+                    show_enemy_phase_start, description_to_display, active_allied_units, allied_units, explain)
         if not action_menu_sprites_added:
             action_menu_sprites_added = True
 
