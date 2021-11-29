@@ -188,7 +188,7 @@ class OilSoldier(Unit):
         self.movement = 3
         self.damage = "VERY HIGH"
         self.actions['Attack'] = (
-            self.attack, "Oil targets an enemy within " + str(self.get_action_range("Attack")) + ", dealing " +
+            self.attack, "Oil targets an enemy within " + str(self.get_action_range("Attack")) + " spaces, dealing " +
             str(self.attack_value) + " damage.")
 
 

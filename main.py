@@ -11,7 +11,7 @@ if getattr(sys, 'frozen', False):
 pygame.font.init()  # for writing text to the screen
 pygame.mixer.init()  # for sound
 
-pygame.display.set_caption("Mini Jam 94: Baking")
+pygame.display.set_caption("Cake Wars")
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -43,13 +43,15 @@ FLY_IMAGE.set_colorkey(TRANSPARENT)
 CAKE_IMAGE = pygame.image.load(os.path.join('assets', 'cake.png')).convert()
 CAKE_IMAGE.set_colorkey(TRANSPARENT)
 
+pygame.display.set_icon(CAKE_IMAGE)
+
 COOKIE_IMAGE = pygame.image.load(os.path.join('assets', 'cookie.png')).convert()
 COOKIE_IMAGE.set_colorkey(TRANSPARENT)
 
 MUFFIN_IMAGE = pygame.image.load(os.path.join('assets', 'muffin.png')).convert()
 MUFFIN_IMAGE.set_colorkey(TRANSPARENT)
 
-MOUSE_IMAGE = pygame.image.load(os.path.join('assets', 'mouse.png')).convert()
+MOUSE_IMAGE = pygame.image.load(os.path.join('assets', 'mouse-2.png')).convert()
 MOUSE_IMAGE.set_colorkey(TRANSPARENT)
 
 VICTORY_IMAGE = pygame.image.load(os.path.join('assets', 'victory.png')).convert()
@@ -111,7 +113,7 @@ BOWL_SURFACE = pygame.transform.scale(BOWL_IMAGE, (TILE_WIDTH * 3, TILE_HEIGHT *
 TEXT_FONT = pygame.font.SysFont('lucidaconsole', 40)
 DESC_FONT = pygame.font.SysFont('lucidaconsole', 20)
 CELL_FONT = pygame.font.SysFont('lucidaconsole', 25)
-BABY_FONT = pygame.font.SysFont('lucidaconsole', 23)
+BABY_FONT = pygame.font.SysFont('lucidaconsole', 21)
 
 all_sprites = pygame.sprite.Group()
 terrain_sprites = pygame.sprite.Group()
@@ -431,7 +433,7 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
     pygame.draw.rect(WIN, BLACK, bottom_left_rect)
     WIN.blit(MOUSE_SURFACE, (bottom_left_rect.x, bottom_left_rect.y))
     pygame.draw.rect(WIN, BLACK, bottom_right_rect)
-    drawText(WIN, "Victory Condition: Begin your turn with at least one allied unit and no enemy units in all yellow areas.", WHITE, bottom_right_rect, BABY_FONT, True)
+    drawText(WIN, "Victory Condition: Begin your turn with at least one allied unit and no enemy units in both of the highlighted bowls.", WHITE, bottom_right_rect, BABY_FONT, True)
     pygame.draw.rect(WIN, BLACK, middle_rect)
     if description_to_display is not None:
         drawText(WIN, description_to_display, WHITE, middle_rect, TEXT_FONT, True)
@@ -445,7 +447,7 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
                                 next_rect.height)
         drawText(WIN, "Movement: " + str(sprite_to_display.movement) + ", Damage: " + str(sprite_to_display.damage), WHITE, next_rect, TEXT_FONT, True)
 
-    drawText(WIN, fps, WHITE, pygame.Rect(5, 5, 300, 300), TEXT_FONT, True)
+    #drawText(WIN, fps, WHITE, pygame.Rect(5, 5, 300, 300), TEXT_FONT, True)
 
     if victory:
         WIN.blit(VICTORY_SHADOW_SURFACE,
