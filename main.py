@@ -90,10 +90,6 @@ TERRAIN_IMAGES[0] = CAKE_IMAGE
 TERRAIN_IMAGES[1] = COOKIE_IMAGE
 TERRAIN_IMAGES[2] = MUFFIN_IMAGE
 
-#pygame.mixer.music.load(os.path.join('assets', 'Spy.mp3'))
-#pygame.mixer.music.set_volume(0.1)
-#pygame.mixer.music.play(-1)
-
 MOUSE_SURFACE = pygame.transform.scale(MOUSE_IMAGE, (200, 200))
 
 VICTORY_SURFACE = pygame.transform.scale(VICTORY_IMAGE, (150 * 4, 83 * 4))
@@ -458,21 +454,21 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
         WIN.blit(VICTORY_SURFACE, (WIDTH // 2 - VICTORY_SURFACE.get_width() // 2, HEIGHT // 2 - VICTORY_SURFACE.get_height() // 2))
         drawText(WIN, "Use the left or right mouse button to restart!", WHITE, pygame.Rect(WIDTH // 2 - VICTORY_SURFACE.get_width() // 2, HEIGHT // 2 - VICTORY_SURFACE.get_height() // 2 + 270, 500, 500), TEXT_FONT, True)
 
-    if defeat:
+    elif defeat:
         WIN.blit(DEFEAT_SHADOW_SURFACE,
                  (WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2 + 10,
                   HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2 + 10))
         WIN.blit(DEFEAT_SURFACE, (WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2, HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2))
         drawText(WIN, "Use the left or right mouse button to restart!", WHITE, pygame.Rect(WIDTH // 2 - DEFEAT_SURFACE.get_width() // 2, HEIGHT // 2 - DEFEAT_SURFACE.get_height() // 2 + 270, 500, 500), TEXT_FONT, True)
 
-    if show_player_phase_indicator:
+    elif show_player_phase_indicator:
         WIN.blit(PLAYER_PHASE_SHADOW_SURFACE,
                  (WIDTH // 2 - PLAYER_PHASE_SHADOW_SURFACE.get_width() // 2 + 10,
                   HEIGHT // 2 - PLAYER_PHASE_SHADOW_SURFACE.get_height() // 2 + 10))
         WIN.blit(PLAYER_PHASE_SURFACE,
                  (WIDTH // 2 - PLAYER_PHASE_SURFACE.get_width() // 2, HEIGHT // 2 - PLAYER_PHASE_SURFACE.get_height() // 2))
 
-    if show_enemy_phase_indicator:
+    elif show_enemy_phase_indicator:
         WIN.blit(ENEMY_PHASE_SHADOW_SURFACE,
                  (WIDTH // 2 - ENEMY_PHASE_SHADOW_SURFACE.get_width() // 2 + 10,
                   HEIGHT // 2 - ENEMY_PHASE_SHADOW_SURFACE.get_height() // 2 + 10))
@@ -907,6 +903,9 @@ def place_allies(allied_units):
 
 
 def game():
+    pygame.mixer.music.load(os.path.join('assets', 'xDeviruchi - Exploring The Unknown (Loop).wav'))
+    pygame.mixer.music.set_volume(0.1)
+    pygame.mixer.music.play(-1)
     pygame.event.set_grab(True)
     restart = False
     for sprite in all_sprites.sprites():
@@ -975,17 +974,20 @@ def game():
                 show_player_phase_start = False
                 print("MISSION COMPLETE BABY")
                 # We have won.
-                # TODO: play fanfare sound
+                pygame.mixer.music.load(os.path.join('assets', 'xDeviruchi - Take some rest and eat some food! (Loop).wav'))
+                pygame.mixer.music.set_volume(0.1)
+                pygame.mixer.music.play(-1)
 
             if len(allied_units) < 1:
-                # TODO: play sad fanfare sound
+                pygame.mixer.music.load(os.path.join('assets', 'xDeviruchi - The Icy Cave (Loop).wav'))
+                pygame.mixer.music.set_volume(0.1)
+                pygame.mixer.music.play(-1)
                 print("MISSION FAILED, WE'LL GET EM NEXT TIME")
                 defeated = True
                 show_player_phase_start = False
             active_allied_units.add(allied_units)
             start_of_player_turn = False
             player_turn = True
-            # TODO: show an indicator that the player turn has started
 
         if len(active_allied_units.sprites()) < 1 and player_turn:
             player_turn = False
@@ -1005,7 +1007,11 @@ def game():
 
             # from https://stackoverflow.com/questions/55579764/pygame-how-to-find-the-nearest-sprite-in-an-array-and-lock-onto-it
             pos = pygame.math.Vector2(sprite.rect.x + sprite.rect.width // 2, sprite.rect.y + sprite.rect.height // 2)
-            targeted_unit = min([e for e in allied_units], key=lambda e: pos.distance_to(pygame.math.Vector2(e.rect.x + e.rect.width // 2, e.rect.y + e.rect.height // 2)))
+            if len(allied_units.sprites()) > 0:
+                targeted_unit = min([e for e in allied_units], key=lambda e: pos.distance_to(pygame.math.Vector2(e.rect.x + e.rect.width // 2, e.rect.y + e.rect.height // 2)))
+            else:
+                # just do this to get through the turn
+                targeted_unit = sprite
             legal_moves = determine_legal_movement_faster(sprite.movement, sprite.get_grid_coordinates(), True)
             targeted_unit_coordinates = targeted_unit.get_grid_coordinates()
             adjacent_squares = {(targeted_unit_coordinates[0] + 1, targeted_unit_coordinates[1]),
@@ -1018,18 +1024,16 @@ def game():
                     sprite.move_to_grid_coordinates(square)
                     if sprite.actions["Attack"][0](targeted_unit):
                         # attack success
-                        # TODO: play a sound effect
                         moved = True
                         break
                     else:
                         sprite.actions["Wait"][0](sprite)
-                        # TODO: play a sound effect
                         # don't wait if all this unit did was Wait
+                        enemy_move_start_time -= enemy_turn_length
                         moved = True
                         break
             if not moved:
                 sprite.actions["Wait"][0](sprite)
-                # TODO: play a sound effect
                 # don't wait if all this unit did was Wait
                 enemy_move_start_time -= enemy_turn_length
             active_hostile_units.remove(sprite)
@@ -1131,20 +1135,23 @@ def game():
                             result = sprite_to_display.actions[selected_action_name][0](mouse_colliding[0])
                             if result:
                                 # the target was successful, move on
-                                # TODO: play a sound effect based on the action performed
                                 sprite_targeting_mode = False
                                 camera_mode = True
                                 active_allied_units.remove(sprite_to_display)
                                 sprite_to_display = None
                             else:
                                 # the target was not successful, do not move on
-                                # TODO: play a sound effect indicating an improper targeting
+                                sound = pygame.mixer.Sound(os.path.join('assets', 'error.wav'))
+                                sound.set_volume(0.1)
+                                sound.play()
                                 pass
                         elif len(mouse_colliding) > 1:
                             print(mouse_colliding)
                             raise TypeError("Multiple sprites were targeted - how???")
                         else:
-                            # TODO: play a sound effect indicating an improper targeting
+                            sound = pygame.mixer.Sound(os.path.join('assets', 'error.wav'))
+                            sound.set_volume(0.1)
+                            sound.play()
                             pass
                 if event.button == 3:
                     # right click

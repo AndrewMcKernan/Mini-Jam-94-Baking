@@ -1,4 +1,5 @@
 import pygame
+import os
 from enum import Enum
 from constants import TILE_WIDTH, TILE_HEIGHT
 
@@ -45,6 +46,9 @@ class MouseSprite(pygame.sprite.Sprite):
 class Unit(pygame.sprite.Sprite):
 
     def wait(self, target):
+        sound = pygame.mixer.Sound(os.path.join('assets', 'wait.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def get_action_range(self, action_name):
@@ -88,6 +92,9 @@ class EggSoldier(Unit):
         target.hp -= self.attack_value
         if target.hp <= 0:
             target.kill()
+        sound = pygame.mixer.Sound(os.path.join('assets', 'egg-attack.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def __init__(self, image, width, height, unit_type, start_x=0, start_y=0):
@@ -119,6 +126,9 @@ class SugarSoldier(Unit):
         target.hp -= self.attack_value
         if target.hp <= 0:
             target.kill()
+        sound = pygame.mixer.Sound(os.path.join('assets', 'egg-attack.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def heal(self, target):
@@ -127,6 +137,11 @@ class SugarSoldier(Unit):
         target.hp += self.heal_value
         if target.hp > target.max_hp:
             target.hp = target.max_hp
+
+        sound = pygame.mixer.Sound(os.path.join('assets', 'heal.wav'))
+        sound.set_volume(0.1)
+        sound.play()
+
         return True
 
     def __init__(self, image, width, height, unit_type, start_x=0, start_y=0):
@@ -159,6 +174,9 @@ class OilSoldier(Unit):
         target.hp -= self.attack_value
         if target.hp <= 0:
             target.kill()
+        sound = pygame.mixer.Sound(os.path.join('assets', 'oil-attack.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def __init__(self, image, width, height, unit_type, start_x=0, start_y=0):
@@ -189,6 +207,9 @@ class GoopSoldier(Unit):
         target.hp -= self.attack_value
         if target.hp <= 0:
             target.kill()
+        sound = pygame.mixer.Sound(os.path.join('assets', 'enemy-attack.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def __init__(self, image, width, height, unit_type, start_x=0, start_y=0):
@@ -218,6 +239,9 @@ class AppleSoldier(Unit):
         target.hp -= self.attack_value
         if target.hp <= 0:
             target.kill()
+        sound = pygame.mixer.Sound(os.path.join('assets', 'enemy-attack.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def __init__(self, image, width, height, unit_type, start_x=0, start_y=0):
@@ -247,6 +271,9 @@ class FlySoldier(Unit):
         target.hp -= self.attack_value
         if target.hp <= 0:
             target.kill()
+        sound = pygame.mixer.Sound(os.path.join('assets', 'enemy-attack.wav'))
+        sound.set_volume(0.1)
+        sound.play()
         return True
 
     def __init__(self, image, width, height, unit_type, start_x=0, start_y=0):
