@@ -58,6 +58,7 @@ class Unit(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = start_x
         self.rect.y = start_y
+        self.damage = ""
         if not isinstance(unit_type, UnitType):
             raise TypeError("Unit Type must be set to a UnitType enum.")
         self.unitType = unit_type
@@ -96,6 +97,7 @@ class EggSoldier(Unit):
         self.max_hp = 5
         self.attack_value = 5
         self.movement = 5
+        self.damage = "HIGH"
         self.actions['Attack'] = (
             self.attack, "Egg targets an adjacent enemy, dealing " + str(self.attack_value) + " damage.")
 
@@ -134,6 +136,7 @@ class SugarSoldier(Unit):
         self.max_hp = 9
         self.attack_value = 1
         self.heal_value = 3
+        self.damage = "LOW"
         self.movement = 3
         self.actions['Attack'] = (
             self.attack, "Sugar targets an adjacent enemy, dealing " + str(self.attack_value) + " damage.")
@@ -165,6 +168,7 @@ class OilSoldier(Unit):
         self.max_hp = 2
         self.attack_value = 7
         self.movement = 3
+        self.damage = "VERY HIGH"
         self.actions['Attack'] = (
             self.attack, "Oil targets an enemy within " + str(self.get_action_range("Attack")) + ", dealing " +
             str(self.attack_value) + " damage.")
@@ -193,6 +197,7 @@ class GoopSoldier(Unit):
         self.hp = 12
         self.max_hp = 12
         self.attack_value = 3
+        self.damage = "LOW"
         self.movement = 2
         self.actions['Attack'] = (
             self.attack, "The Kitchen Goop targets an adjacent enemy, dealing " + str(self.attack_value) + "damage.")
@@ -221,6 +226,7 @@ class AppleSoldier(Unit):
         self.hp = 1
         self.max_hp = 1
         self.attack_value = 6
+        self.damage = "VERY HIGH"
         self.movement = 4
         self.actions['Attack'] = (
             self.attack, "The Bad Apple targets an adjacent enemy, dealing " + str(self.attack_value) + "damage.")
@@ -250,5 +256,6 @@ class FlySoldier(Unit):
         self.max_hp = 6
         self.attack_value = 3
         self.movement = 7
+        self.damage = "LOW"
         self.actions['Attack'] = (
             self.attack, "The Fly targets an adjacent enemy, dealing " + str(self.attack_value) + "damage.")

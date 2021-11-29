@@ -1,5 +1,6 @@
 import os, sys
 import pygame
+import random
 from constants import *
 from draw_text import drawText
 from sprites import *
@@ -39,8 +40,14 @@ APPLE_IMAGE.set_colorkey(TRANSPARENT)
 FLY_IMAGE = pygame.image.load(os.path.join('assets', 'fly.png')).convert()
 FLY_IMAGE.set_colorkey(TRANSPARENT)
 
-FORK_IMAGE = pygame.image.load(os.path.join('assets', 'fork.png')).convert()
-FORK_IMAGE.set_colorkey(TRANSPARENT)
+CAKE_IMAGE = pygame.image.load(os.path.join('assets', 'cake.png')).convert()
+CAKE_IMAGE.set_colorkey(TRANSPARENT)
+
+COOKIE_IMAGE = pygame.image.load(os.path.join('assets', 'cookie.png')).convert()
+COOKIE_IMAGE.set_colorkey(TRANSPARENT)
+
+MUFFIN_IMAGE = pygame.image.load(os.path.join('assets', 'muffin.png')).convert()
+MUFFIN_IMAGE.set_colorkey(TRANSPARENT)
 
 MOUSE_IMAGE = pygame.image.load(os.path.join('assets', 'mouse.png')).convert()
 MOUSE_IMAGE.set_colorkey(TRANSPARENT)
@@ -78,7 +85,10 @@ WOOD_TEXTURE_IMAGE.set_colorkey(TRANSPARENT)
 BOWL_IMAGE = pygame.image.load(os.path.join('assets', 'bowl_200x139.png')).convert()
 BOWL_IMAGE.set_colorkey(TRANSPARENT)
 
-MAP_IMAGES = dict()
+TERRAIN_IMAGES = dict()
+TERRAIN_IMAGES[0] = CAKE_IMAGE
+TERRAIN_IMAGES[1] = COOKIE_IMAGE
+TERRAIN_IMAGES[2] = MUFFIN_IMAGE
 
 #pygame.mixer.music.load(os.path.join('assets', 'Spy.mp3'))
 #pygame.mixer.music.set_volume(0.1)
@@ -437,7 +447,7 @@ def draw_window(cursor_xy, fps, sprite_to_display, moving_sprite_mode, potential
         drawText(WIN, "HP: " + str(sprite_to_display.hp) + "/" + str(sprite_to_display.max_hp), WHITE, next_rect, TEXT_FONT, True)
         next_rect = pygame.Rect(next_rect.x, next_rect.y + TEXT_FONT.get_height() + 3, next_rect.width,
                                 next_rect.height)
-        drawText(WIN, "Movement: " + str(sprite_to_display.movement), WHITE, next_rect, TEXT_FONT, True)
+        drawText(WIN, "Movement: " + str(sprite_to_display.movement) + ", Damage: " + str(sprite_to_display.damage), WHITE, next_rect, TEXT_FONT, True)
 
     drawText(WIN, fps, WHITE, pygame.Rect(5, 5, 300, 300), TEXT_FONT, True)
 
@@ -521,6 +531,10 @@ def victory_condition(allied_sprites, enemy_sprites):
     return False
 
 
+def get_random_terrain_image():
+    return TERRAIN_IMAGES[random.randint(0, 2)]
+
+
 def generate_terrain():
     # bottom of the map
     for i in range(GRID_WIDTH):
@@ -532,13 +546,13 @@ def generate_terrain():
     # bottom left wall
     for i in range(8):
         xy = coordinates_to_xy((i, 21))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # bottom right wall
     for i in range(13):
         xy = coordinates_to_xy((13 + i, 21))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # bottom left bit of water
@@ -557,13 +571,13 @@ def generate_terrain():
     # small buildings right of the bottom left chunk of water
     for i in range(3):
         xy = coordinates_to_xy((6, 18 - i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # middle row of blocking buildings
     for i in range(3):
         xy = coordinates_to_xy((9 + i, 12))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # large chunk of water on the bottom right, p1
@@ -590,7 +604,7 @@ def generate_terrain():
     # long, thin row of buildings on the right
     for i in range(11):
         xy = coordinates_to_xy((22, 12 - i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # main body of water, left side p1
@@ -688,87 +702,87 @@ def generate_terrain():
     for i in range(2):
         for n in range(2):
             xy = coordinates_to_xy((3 + n, i))
-            terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
             add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 1
     for i in range(2):
         xy = coordinates_to_xy((4, 4 + i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 2
     for i in range(1):
         xy = coordinates_to_xy((5 + i, 6))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 3
     for i in range(1):
         xy = coordinates_to_xy((6 + i, 7))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 4
     for i in range(1):
         xy = coordinates_to_xy((7 + i, 6))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 5
     for i in range(6):
         xy = coordinates_to_xy((8, i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 6
     for i in range(2):
         xy = coordinates_to_xy((9, i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 7
     for i in range(2):
         for n in range(2):
             xy = coordinates_to_xy((12 + n, i))
-            terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
             add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 7
     for i in range(4):
         xy = coordinates_to_xy((13, 2 + i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 8
     for i in range(1):
         xy = coordinates_to_xy((14, 6 + i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 9
     for i in range(1):
         xy = coordinates_to_xy((15, 7 + i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 10
     for i in range(1):
         xy = coordinates_to_xy((16, 6 + i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # water rim, part 11
     for i in range(2):
         xy = coordinates_to_xy((17, 4 + i))
-        terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+        terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
         add_sprite_to_group(terrain, terrain_sprites)
 
     # square building, upper right
     for i in range(2):
         for n in range(2):
             xy = coordinates_to_xy((17 + n, i))
-            terrain = Terrain(FORK_IMAGE, TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
+            terrain = Terrain(get_random_terrain_image(), TILE_WIDTH, TILE_HEIGHT, xy[0], xy[1])
             add_sprite_to_group(terrain, terrain_sprites)
 
 
